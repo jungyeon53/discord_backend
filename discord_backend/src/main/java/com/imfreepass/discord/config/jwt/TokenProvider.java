@@ -1,0 +1,57 @@
+package com.imfreepass.discord.config.jwt;
+
+import java.time.Duration;
+import java.util.Date;
+
+import org.springframework.stereotype.Service;
+
+import com.imfreepass.discord.api.response.LoginUser;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
+@RequiredArgsConstructor
+@Service
+public class TokenProvider {
+	
+	private final JwtProperties jwtProperties;
+	
+	private String accessToken(Date expiry, LoginUser user) {
+		Date now = new Date();
+		return Jwts.builder()
+				.setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+				.setIssuer(jwtProperties.getIssuer())
+				.setIssuedAt(now)
+				.setExpiration(expiry)
+				.setSubject(user.getEmail())
+				.claim("email", user.getEmail())
+				.claim("nickname", user.getNickname())
+				.signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
+				.compact();
+	}
+	
+	public String makeToken(LoginUser user, Duration expiredAt) {
+		Date now = new Date();
+		return accessToken(new Date(now.getTime() + expiredAt.toMillis()), user);
+	}
+	
+	public String validateAndGetUserId(String token) throws JwtException{
+		try {
+			Claims claims = Jwts.parser()
+					.setSigningKey(jwtProperties.getSecretKey())
+					.parseClaimsJws(token)
+					.getBody();
+			return claims.getSubject();
+		} catch (JwtException e) {
+			log.info("오류" + e);
+			throw new JwtException("토큰 틀림", e);
+		}
+	}
+	
+}
