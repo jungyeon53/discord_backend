@@ -16,7 +16,7 @@ public class LoginUser {
 	private String nickname;
 	private String message;
 	private String acessToken;
-	private String refeshToken;
+	private String refreshToken;
 	
 	
 }

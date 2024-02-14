@@ -80,7 +80,7 @@ public class UserApi {
 	
 		Optional<User> view = userService.selectEmail(user.getEmail());
 		String refreshToken = view.get().getRefreshToken();
-		if(refreshToken.equals(user.getRefeshToken())) {
+		if(refreshToken.equals(user.getRefreshToken())) {
 			Duration accessTime = Duration.ofMinutes(30);
 			String accessToken = tokenProvider.makeToken(user, accessTime);
 			LoginResponse response = new LoginResponse(user.getEmail(), accessToken, "재발급성공");
