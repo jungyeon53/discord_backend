@@ -9,16 +9,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.imfreepass.discord.api.request.CreateUser;
-import com.imfreepass.discord.api.response.ViewUser;
 import com.imfreepass.discord.entity.User;
 import com.imfreepass.discord.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
 public class UserService {
 	
 	private final UserRepository userRepository;
@@ -67,4 +64,10 @@ public class UserService {
     public void removeRefreshToken(String email) {
         userRepository.clearTokenByEmail(email);
     }
+    
+    // 비밀번호 변경 
+	public void modifyPw(Long user_id, String password) {
+		userRepository.updatePassword(user_id, password);
+		
+	}
 }
