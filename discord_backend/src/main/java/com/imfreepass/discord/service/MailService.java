@@ -30,21 +30,13 @@ public class MailService {
 	private String tokenLink;
 	
 	public void createLink(String email, Long user_id) {
-		Optional<User> userOptional = userRepository.findByEmail(email);
-		if (userOptional.isPresent()) {
-	        User user = userOptional.get();
 	        Duration tokenTime = Duration.ofMinutes(30);
-	        user_id = user.getUser_id();
 	        tokenLink = provider.makeTokenLink(user_id, email, tokenTime);
-	    } else {
-	    	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "가입되지 않은 사용자입니다");
-	    }
-		
 	}
 	
-	public MimeMessage createEmailForm(String email) throws MessagingException, UnsupportedEncodingException{
+	public MimeMessage createEmailForm(String email, Long user_id) throws MessagingException, UnsupportedEncodingException{
 		// 토큰 값 
-		createLink(email, null);
+		createLink(email, user_id);
 		String setFrom = "discordcteam@gmail.com";
 		String title = "Discord Clone 비밀번호 재설정 요청";
 		
@@ -61,8 +53,8 @@ public class MailService {
         context.setVariable("link", link);
         return templateEngine.process("mail", context);
     }
-	public String sendEmail(String toEmail) throws MessagingException, UnsupportedEncodingException {
-        MimeMessage mailForm = createEmailForm(toEmail);
+	public String sendEmail(String toEmail, Long user_id) throws MessagingException, UnsupportedEncodingException {
+        MimeMessage mailForm = createEmailForm(toEmail, user_id);
         mailSender.send(mailForm);
 
         return tokenLink;

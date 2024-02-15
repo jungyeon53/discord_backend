@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.imfreepass.discord.api.request.CreateUser;
 import com.imfreepass.discord.api.request.PasswordChage;
@@ -114,8 +115,14 @@ public class UserApi {
 	// 비밀번호 변경 이메일 보내기
 	@PostMapping("/email")
 	public String mailConfirm(@RequestBody SendEmail emailDto) throws MessagingException, UnsupportedEncodingException {
-		String tokenLink = mailService.sendEmail(emailDto.getEmail());
-		return tokenLink;
+		Optional<User> userOptional = userService.findByEmail(emailDto.getEmail());
+		if (userOptional.isPresent()) {
+			Long user_id = userOptional.get().getUser_id();
+			String tokenLink = mailService.sendEmail(emailDto.getEmail(), user_id);
+			return tokenLink;
+		} else {
+	    	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "가입되지 않은 사용자입니다");
+	    }
 	}
 
 	// 비밀번호 변경 이메일 보기

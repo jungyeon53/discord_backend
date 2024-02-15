@@ -70,4 +70,9 @@ public class UserService {
 		userRepository.updatePassword(user_id, password);
 		
 	}
+	
+	// email로 유저 조회 
+	public Optional<User> findByEmail(String email) {
+		return userRepository.findByEmail(email);
+	}
 }
