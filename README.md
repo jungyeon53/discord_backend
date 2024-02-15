@@ -1,9 +1,9 @@
 ## Discord Clone 백엔드 (24.01.29 ~ 현재 진행중)
 프론트 담당 : 이길호 
 백엔드 담당 : 김정연
-
-
-
+<br />
+<a href="https://docs.google.com/spreadsheets/d/1hxbx__Gz9DKd2sEl_v-7-JrF99VRnm534RZEoAIE6Ng/edit#gid=0">[API 명세서]</a>
+<br />
 2/13 
 1. 회원가입
 2. 로그인
