@@ -1,5 +1,5 @@
 
-package com.imfreepass.discord.api;
+package com.imfreepass.discord.user.api;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
@@ -12,37 +12,46 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.imfreepass.discord.api.request.CreateUser;
-import com.imfreepass.discord.api.request.PasswordChage;
-import com.imfreepass.discord.api.request.SendEmail;
-import com.imfreepass.discord.api.response.LoginResponse;
-import com.imfreepass.discord.api.response.LoginUser;
-import com.imfreepass.discord.config.jwt.TokenProvider;
-import com.imfreepass.discord.entity.User;
-import com.imfreepass.discord.service.MailService;
-import com.imfreepass.discord.service.UserService;
+import com.imfreepass.discord.user.api.request.CreateUser;
+import com.imfreepass.discord.user.api.request.NicknameChange;
+import com.imfreepass.discord.user.api.request.PasswordChage;
+import com.imfreepass.discord.user.api.request.SendEmail;
+import com.imfreepass.discord.user.api.response.LoginResponse;
+import com.imfreepass.discord.user.api.response.LoginUser;
+import com.imfreepass.discord.user.api.response.ViewUser;
+import com.imfreepass.discord.user.config.jwt.TokenProvider;
+import com.imfreepass.discord.user.entity.User;
+import com.imfreepass.discord.user.service.MailService;
+import com.imfreepass.discord.user.service.UserService;
+import com.imfreepass.discord.user.service.User_ImgService;
 
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Log4j2
 public class UserApi {
 
 	private final UserService userService;
 	private final PasswordEncoder encoder;
 	private final TokenProvider tokenProvider;
 	private final MailService mailService;
+	private final User_ImgService imgService;
 
 	@GetMapping("/register")
 	@CrossOrigin
@@ -145,4 +154,47 @@ public class UserApi {
 		}
 	}
 
+	// 비밀번호 변경 
+	@PutMapping("/user/changepw")
+	public ResponseEntity<String> changePassword(@RequestBody PasswordChage pwDto){
+		Optional<User> optionUser = userService.findByEmail(pwDto.getEmail());
+		if(optionUser.isPresent() && encoder.matches(pwDto.getCurrentPassword(), optionUser.get().getPassword())) {
+			User user = optionUser.get();
+			user.setPassword(BCrypt.hashpw(pwDto.getPassword(), BCrypt.gensalt()));
+			userService.modifyPw(user.getUser_id(), user.getPassword());
+			return ResponseEntity.ok("변경이 완료되었습니다.");
+		} else {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("변경이 실패되었습니다");
+		}
+	}
+	
+	// 닉네임 변경 
+	@PutMapping("/user/changenickname")
+	public ResponseEntity<String> changeNickname(@RequestBody NicknameChange nickDto){
+		Optional<User> optionUser = userService.findByEmail(nickDto.getEmail());
+		if(optionUser.isPresent()) {
+			User user = optionUser.get();
+			user.setNickname(nickDto.getNickname());
+			userService.modifyNickname(user.getUser_id(), user.getNickname());
+			return ResponseEntity.ok("닉네임 수정 완료");
+		} else {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("닉네임 수정 실패했습니다.");
+		}
+	}
+	
+	// 프로필 등록 
+	@PostMapping("/user/profile/img")
+	public ResponseEntity<String> addProfileImg(
+			@RequestPart(value = "imgs", required = false) List<MultipartFile> files, 
+			@RequestPart(value = "user", required = false) Long user_id
+			){
+		try {
+			imgService.addProfile(files, user_id);
+			return ResponseEntity.ok("이미지가 등록되었습니다.");
+		}catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미지 등록에 실패했습니다.");
+		}
+	}
+	
 }

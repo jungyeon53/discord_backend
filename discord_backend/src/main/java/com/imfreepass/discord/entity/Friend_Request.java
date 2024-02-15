@@ -1,5 +1,7 @@
 package com.imfreepass.discord.entity;
 
+import com.imfreepass.discord.user.entity.User;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

@@ -1,4 +1,4 @@
-package com.imfreepass.discord.config.jwt;
+package com.imfreepass.discord.user.config.jwt;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;

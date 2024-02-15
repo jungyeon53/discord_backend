@@ -1,4 +1,4 @@
-package com.imfreepass.discord.config.security;
+package com.imfreepass.discord.user.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,6 @@
-package com.imfreepass.discord.entity;
+package com.imfreepass.discord.user.entity;
+
+import com.imfreepass.discord.entity.Badge;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

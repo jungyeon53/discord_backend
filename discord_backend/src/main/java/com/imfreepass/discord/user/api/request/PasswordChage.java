@@ -1,4 +1,4 @@
-package com.imfreepass.discord.api.request;
+package com.imfreepass.discord.user.api.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SendEmail {
+public class PasswordChage {
 	
-	public String email;
+	private String email;
+	private String password;
+	private String currentPassword;
 }

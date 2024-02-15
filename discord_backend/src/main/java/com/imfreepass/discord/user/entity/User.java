@@ -1,6 +1,8 @@
-package com.imfreepass.discord.entity;
+package com.imfreepass.discord.user.entity;
 
 import java.time.ZonedDateTime;
+
+import com.imfreepass.discord.entity.State;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

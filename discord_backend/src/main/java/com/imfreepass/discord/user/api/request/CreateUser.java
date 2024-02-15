@@ -1,4 +1,4 @@
-package com.imfreepass.discord.api.request;
+package com.imfreepass.discord.user.api.request;
 
 import java.time.ZonedDateTime;
 

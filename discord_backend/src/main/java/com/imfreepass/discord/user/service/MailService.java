@@ -1,4 +1,4 @@
-package com.imfreepass.discord.service;
+package com.imfreepass.discord.user.service;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.thymeleaf.spring6.ISpringTemplateEngine;
 
-import com.imfreepass.discord.config.jwt.TokenProvider;
-import com.imfreepass.discord.entity.User;
-import com.imfreepass.discord.repository.UserRepository;
+import com.imfreepass.discord.user.config.jwt.TokenProvider;
+import com.imfreepass.discord.user.entity.User;
+import com.imfreepass.discord.user.repository.UserRepository;
 
 import org.thymeleaf.context.Context;
 import jakarta.mail.MessagingException;

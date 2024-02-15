@@ -1,4 +1,4 @@
-package com.imfreepass.discord.repository;
+package com.imfreepass.discord.user.repository;
 
 import java.util.Optional;
 
@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.imfreepass.discord.api.response.LoginUser;
-import com.imfreepass.discord.entity.User;
+import com.imfreepass.discord.user.api.response.LoginUser;
+import com.imfreepass.discord.user.entity.User;
 
 import jakarta.transaction.Transactional;
 
@@ -21,11 +21,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Transactional
 	@Modifying
 	@Query("update User u set u.refreshToken = null where u.email = :email")
-	void clearTokenByEmail(@Param("email") String email);
+	int clearTokenByEmail(@Param("email") String email);
 
 	@Transactional
 	@Modifying
 	@Query("update User u set u.password = :password where u.user_id = :userId")
-	void updatePassword(@Param("userId") Long userId, @Param("password") String password);
-
+	int updatePassword(@Param("userId") Long userId, @Param("password") String password);
+	
+	@Transactional
+	@Modifying
+	@Query("update User u set u.nickname = :nickname where u.user_id = :userId")
+	int updateNickname(@Param("userId") Long userId, @Param("nickname") String nickname);
 }
