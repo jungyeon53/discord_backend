@@ -39,5 +39,11 @@ SPRINGBOOT, JPA, REACT, SCSS
       - GetMapping("/email/tokenLink") 로 비밀번호 변경 화면 
   2. 비밀번호 변경하기
 
-
+- **2/15**
+  1. 마이페이지
+      - 비밀번호 변경
+      - 닉네임 변경
+  2. 프로필 사진 첨부
+     - 이미지 정보 디비에 추가 > 첨부파일 완료 
+     - 백엔드에 이미지 저장 > static 폴더가 rources 에 인식이 안됌 > 수정 예정 
    
