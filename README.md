@@ -1,5 +1,4 @@
-## Discord Clone 백엔드 
-
+## Discord Clone 백엔드 (현재 진행중)
 2/13 
 1. 회원가입
 2. 로그인
