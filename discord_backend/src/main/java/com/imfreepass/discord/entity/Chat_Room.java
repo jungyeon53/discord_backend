@@ -23,11 +23,13 @@ public class Chat_Room {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long chat_room_id;
+	@Column(name = "chat_room_id")
+	private Long chatRoomId;
 	@ManyToOne
 	@JoinColumn(name = "server_id", referencedColumnName = "server_id")
-	private Server server_id;
+	private Server serverId;
 	@Column(length = 50)
 	private String title;
-	private int room_state;
+	@Column(name = "room_state")
+	private int roomState;
 }

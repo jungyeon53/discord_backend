@@ -23,7 +23,7 @@ public class CreateUser {
 	private String nickname; // 별명 
 	private String user_hash; // 사용자명 
 	private String birth;
-	private ZonedDateTime join_date;
+	private ZonedDateTime joinDate;
 	
 //	public CreateUser encodePw(PasswordEncoder encoder) {
 //		this.password = encoder.encode(password);

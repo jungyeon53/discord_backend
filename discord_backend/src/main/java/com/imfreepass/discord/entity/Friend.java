@@ -3,6 +3,7 @@ package com.imfreepass.discord.entity;
 
 import com.imfreepass.discord.user.entity.User;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,12 +25,14 @@ import lombok.NoArgsConstructor;
 public class Friend {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long friend_id;
+	@Column(name = "friend_id")
+	private Long friendId;
 	@ManyToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
-	private User user_id; // 받은 친구 
+	private User userId; // 받은 친구 
 	@ManyToOne
 	@JoinColumn(name = "send_user_id", referencedColumnName = "user_id")
-	private User send_user_id; // 보낸 친구 
-	private int friend_state; // 친구 상태 
+	private User sendUserId; // 보낸 친구
+	@Column(name = "friend_state")
+	private int friendState; // 친구 상태 
 }

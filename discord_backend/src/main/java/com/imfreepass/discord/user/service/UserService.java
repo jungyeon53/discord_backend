@@ -30,9 +30,9 @@ public class UserService {
 					.email(req.getEmail())
 					.password(bCryptPasswordEncoder.encode(req.getPassword()))
 					.nickname(req.getNickname())
-					.user_hash(req.getUser_hash())
+					.userHash(req.getUser_hash())
 					.birth(req.getBirth())
-					.join_date(ZonedDateTime.now())
+					.joinDate(ZonedDateTime.now())
 					.build();
 			userRepository.save(user);
 			return user;

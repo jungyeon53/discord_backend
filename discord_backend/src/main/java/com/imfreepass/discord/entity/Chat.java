@@ -5,6 +5,7 @@ import java.time.LocalTime;
 
 import com.imfreepass.discord.user.entity.User;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,16 +28,18 @@ public class Chat {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long chat_id;
+	@Column(name = "chat_id")
+	private Long chatId;
 	@ManyToOne
 	@JoinColumn(name = "chat_room_id" , referencedColumnName = "chat_room_id")
-	private Chat_Room chat_room_id;
+	private Chat_Room chatRoomId;
 	@ManyToOne
 	@JoinColumn(name = "from_user_id", referencedColumnName = "user_id")
-	private User from_user_id;
+	private User fromUserId;
 
 	private String text;
 	private LocalDate date;
 	private LocalTime time;
-	private int chat_state;
+	@Column(name = "chatState")
+	private int chatState;
 }

@@ -21,7 +21,8 @@ public class Badge {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long badge_id;
+	@Column(name = "badge_id")
+	private Long badgeId;
 	
 	@Column(length = 50)
 	private String alt; // 뱃지 이름 

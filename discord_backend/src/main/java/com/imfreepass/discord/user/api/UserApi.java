@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.imfreepass.discord.user.api.request.AddAndRemoveProfile;
 import com.imfreepass.discord.user.api.request.CreateUser;
 import com.imfreepass.discord.user.api.request.NicknameChange;
 import com.imfreepass.discord.user.api.request.PasswordChage;
@@ -69,7 +70,7 @@ public class UserApi {
 			// 중복된 이메일 예외 처리
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 가입된 이메일 주소입니다.");
 		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원가입 실패");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원가입이 실패했습니다.");
 		}
 	}
 
@@ -86,7 +87,7 @@ public class UserApi {
 			String refeshToken = tokenProvider.makeToken(user, refeshTime);
 			// refreshToken 저장
 			userService.saveRefreshToken(user.getEmail(), refeshToken);
-			LoginResponse response = new LoginResponse(user.getEmail(), accessToken, refeshToken, "로그인성공");
+			LoginResponse response = new LoginResponse(user.getEmail(), accessToken, refeshToken, "로그인 성공입니다.");
 			return ResponseEntity.ok(response);
 		} else {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -102,7 +103,7 @@ public class UserApi {
 		if (refreshToken.equals(user.getRefreshToken())) {
 			Duration accessTime = Duration.ofMinutes(30);
 			String accessToken = tokenProvider.makeToken(user, accessTime);
-			LoginResponse response = new LoginResponse(user.getEmail(), accessToken, "재발급성공");
+			LoginResponse response = new LoginResponse(user.getEmail(), accessToken, "accessToken 재발급되었습니다.");
 			return ResponseEntity.ok(response);
 		} else {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -114,10 +115,10 @@ public class UserApi {
 	public ResponseEntity<String> logout(@RequestBody LoginUser user) {
 		try {
 			userService.removeRefreshToken(user.getEmail());
-			return ResponseEntity.ok("로그아웃 완료");
+			return ResponseEntity.ok("로그아웃 완료입니다.");
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그아웃 실패");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그아웃 실패입니다.");
 		}
 	}
 
@@ -126,7 +127,7 @@ public class UserApi {
 	public String mailConfirm(@RequestBody SendEmail emailDto) throws MessagingException, UnsupportedEncodingException {
 		Optional<User> userOptional = userService.findByEmail(emailDto.getEmail());
 		if (userOptional.isPresent()) {
-			Long user_id = userOptional.get().getUser_id();
+			Long user_id = userOptional.get().getUserId();
 			String tokenLink = mailService.sendEmail(emailDto.getEmail(), user_id);
 			return tokenLink;
 		} else {
@@ -147,7 +148,7 @@ public class UserApi {
 		if (user.isPresent()) {
 			user.get().setPassword(BCrypt.hashpw(pwDto.getPassword(), BCrypt.gensalt()));
 
-			userService.modifyPw(user.get().getUser_id(), user.get().getPassword());
+			userService.modifyPw(user.get().getUserId(), user.get().getPassword());
 			return ResponseEntity.ok("변경이 완료되었습니다.");
 		} else {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("변경이 실패되었습니다");
@@ -161,7 +162,7 @@ public class UserApi {
 		if(optionUser.isPresent() && encoder.matches(pwDto.getCurrentPassword(), optionUser.get().getPassword())) {
 			User user = optionUser.get();
 			user.setPassword(BCrypt.hashpw(pwDto.getPassword(), BCrypt.gensalt()));
-			userService.modifyPw(user.getUser_id(), user.getPassword());
+			userService.modifyPw(user.getUserId(), user.getPassword());
 			return ResponseEntity.ok("변경이 완료되었습니다.");
 		} else {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("변경이 실패되었습니다");
@@ -175,7 +176,7 @@ public class UserApi {
 		if(optionUser.isPresent()) {
 			User user = optionUser.get();
 			user.setNickname(nickDto.getNickname());
-			userService.modifyNickname(user.getUser_id(), user.getNickname());
+			userService.modifyNickname(user.getUserId(), user.getNickname());
 			return ResponseEntity.ok("닉네임 수정 완료");
 		} else {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("닉네임 수정 실패했습니다.");
@@ -194,6 +195,18 @@ public class UserApi {
 		}catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미지 등록에 실패했습니다.");
+		}
+	}
+	
+	// 프로필 삭제 
+	@PostMapping("/user/profile/img/remove")
+	public ResponseEntity<String> removeProfile(@RequestBody AddAndRemoveProfile profile){
+		try {
+			imgService.imgRemove(profile.getUserImgId(), profile.getUserId());
+			return ResponseEntity.ok("이미지가 삭제되었습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미지 삭제에 실패했습니다.");
 		}
 	}
 	

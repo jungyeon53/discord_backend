@@ -32,7 +32,7 @@ public class TokenProvider {
 				.setSubject(user.getEmail())
 				.claim("email", user.getEmail())
 				.claim("nickname", user.getNickname())
-				.claim("user_id", user.getUser_id())
+				.claim("user_id", user.getUserId())
 				.signWith(SignatureAlgorithm.HS256, jwtProperties.getSecretKey())
 				.compact();
 	}

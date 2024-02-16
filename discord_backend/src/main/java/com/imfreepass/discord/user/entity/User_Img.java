@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -23,12 +24,13 @@ public class User_Img {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long user_img_id; // img PK
-	@OneToOne
+	@Column(name = "user_img_id")
+	private Long userImgId; // img PK
+	@ManyToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
-	private User user_id;
+	private User userId;
 	@Column(length = 50)
 	private String original; // 원본 이름 
-	@Column(length = 50)
+	@Column(length = 100)
 	private String path; // 경로 
 }

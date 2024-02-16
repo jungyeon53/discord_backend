@@ -25,10 +25,11 @@ public class Server {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long server_id;
+	@Column(name = "server_id")
+	private Long serverId;
 	@ManyToOne
 	@JoinColumn(name = "user_id" , referencedColumnName = "user_id")
-	private User user_id;
+	private User userId;
 	@Column(length = 50)
 	private String title;
 }

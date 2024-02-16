@@ -2,6 +2,7 @@ package com.imfreepass.discord.entity;
 
 import com.imfreepass.discord.user.entity.User;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,13 +25,14 @@ public class Alarm {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long alarm_id;
+	@Column(name = "alarm_id")
+	private Long alarmId;
 	@ManyToOne
 	@JoinColumn(name = "chat_id", referencedColumnName = "chat_id")
-	private Chat chat_id; // 채팅 pk 
+	private Chat chatId; // 채팅 pk 
 	@ManyToOne
 	@JoinColumn(name="user_id", referencedColumnName = "user_id")
-	private User user_id; // 받은 사람 
-	
-	private int chat_state; // 채팅 확인 여부 
+	private User userId; // 받은 사람 
+	@Column(name = "chat_state")
+	private int chatState; // 채팅 확인 여부 
 }

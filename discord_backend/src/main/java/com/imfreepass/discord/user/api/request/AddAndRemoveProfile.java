@@ -12,9 +12,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AddProfile {
+public class AddAndRemoveProfile {
 	
-	private Long user_id;
+	private Long userImgId;
+	private Long userId;
 	private String original; // 원본 이름 
 	private String path; // 경로 
 }

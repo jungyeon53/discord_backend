@@ -29,21 +29,23 @@ public class User {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long user_id;
+	@Column(name = "user_id")
+	private Long userId;
 	@OneToOne
 	@JoinColumn(name = "state_id" , referencedColumnName = "state_id")
-	private State state_id; // 상태pk 
+	private State stateId; // 상태pk 
 	@Column(length = 50)
 	private String email;
 	@Column(length = 255)
 	private String password;
 	@Column(length = 50)
 	private String nickname;
-	@Column(length = 50)
-	private String user_hash; // 사용자명 
+	@Column(length = 50, name = "user_hash")
+	private String userHash; // 사용자명 
 	@Column(length = 50)
 	private String birth;
-	private ZonedDateTime join_date; // 가입날짜 
+	@Column(name = "join_date")
+	private ZonedDateTime joinDate; // 가입날짜 
 	
 	private String refreshToken; // 리프레쉬 토큰 
 }

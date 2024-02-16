@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginUser {
 	
-	private Long user_id;
+	private Long userId;
 	private String email;
 	private String password;
 	private String nickname;

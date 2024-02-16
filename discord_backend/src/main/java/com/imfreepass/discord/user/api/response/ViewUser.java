@@ -17,8 +17,8 @@ import lombok.Setter;
 @Builder
 public class ViewUser {
 
-	private Long user_id;
-	private State state_id; // 상태pk 
+	private Long userId;
+	private State stateId; // 상태pk 
 	private String email;
 	private String password;
 	private String nickname;

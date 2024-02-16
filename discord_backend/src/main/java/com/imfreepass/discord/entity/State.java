@@ -21,9 +21,10 @@ public class State {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long state_id;
-	@Column(length = 50)
-	private String state_name;
-	@Column(length = 50)
-	private String state_text;
+	@Column(name = "state_id")
+	private Long stateId;
+	@Column(length = 50, name = "state_name")
+	private String stateName;
+	@Column(length = 50, name = "state_text")
+	private String stateText;
 }

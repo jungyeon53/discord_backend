@@ -2,6 +2,7 @@ package com.imfreepass.discord.entity;
 
 import com.imfreepass.discord.user.entity.User;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,11 +25,12 @@ public class Server_User {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long chat_room_user_id;
+	@Column(name = "chat_room_user_id")
+	private Long chatRoomUserId;
 	@ManyToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
-	private User user_id;
+	private User userId;
 	@ManyToOne
 	@JoinColumn(name = "server_id", referencedColumnName = "server_id")
-	private Server server_id;
+	private Server serverId;
 }
