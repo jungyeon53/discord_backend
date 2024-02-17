@@ -31,6 +31,6 @@ public class User_Img {
 	private User userId;
 	@Column(length = 50)
 	private String original; // 원본 이름 
-	@Column(length = 100)
+	@Column(length = 1000)
 	private String path; // 경로 
 }

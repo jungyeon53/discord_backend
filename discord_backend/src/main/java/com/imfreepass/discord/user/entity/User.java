@@ -46,6 +46,6 @@ public class User {
 	private String birth;
 	@Column(name = "join_date")
 	private ZonedDateTime joinDate; // 가입날짜 
-	
 	private String refreshToken; // 리프레쉬 토큰 
+	
 }

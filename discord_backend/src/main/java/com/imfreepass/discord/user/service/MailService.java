@@ -29,11 +29,24 @@ public class MailService {
 	private final UserRepository userRepository;
 	private String tokenLink;
 	
+	/**
+	 * 이메일 url에 토큰 추가 
+	 * @param email
+	 * @param user_id
+	 */
 	public void createLink(String email, Long user_id) {
 	        Duration tokenTime = Duration.ofMinutes(30);
 	        tokenLink = provider.makeTokenLink(user_id, email, tokenTime);
 	}
 	
+	/**
+	 * 이메일 폼 생성 
+	 * @param email
+	 * @param user_id
+	 * @return
+	 * @throws MessagingException
+	 * @throws UnsupportedEncodingException
+	 */
 	public MimeMessage createEmailForm(String email, Long user_id) throws MessagingException, UnsupportedEncodingException{
 		// 토큰 값 
 		createLink(email, user_id);
@@ -48,11 +61,24 @@ public class MailService {
 		
 		return message;
 	}
+	/**
+	 * 템플릿 + link 처리 
+	 * @param link
+	 * @return
+	 */
 	public String setContext(String link) {
         Context context = new Context();
         context.setVariable("link", link);
         return templateEngine.process("mail", context);
     }
+	/**
+	 * 이메일 전송 
+	 * @param toEmail
+	 * @param user_id
+	 * @return
+	 * @throws MessagingException
+	 * @throws UnsupportedEncodingException
+	 */
 	public String sendEmail(String toEmail, Long user_id) throws MessagingException, UnsupportedEncodingException {
         MimeMessage mailForm = createEmailForm(toEmail, user_id);
         mailSender.send(mailForm);

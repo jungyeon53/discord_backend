@@ -15,7 +15,5 @@ import lombok.NoArgsConstructor;
 public class AddAndRemoveProfile {
 	
 	private Long userImgId;
-	private Long userId;
-	private String original; // 원본 이름 
-	private String path; // 경로 
+	private User userId;
 }

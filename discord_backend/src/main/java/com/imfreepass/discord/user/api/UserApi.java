@@ -1,6 +1,7 @@
 
 package com.imfreepass.discord.user.api;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.time.Duration;
 import java.util.List;
@@ -32,13 +33,16 @@ import com.imfreepass.discord.user.api.request.SendEmail;
 import com.imfreepass.discord.user.api.response.LoginResponse;
 import com.imfreepass.discord.user.api.response.LoginUser;
 import com.imfreepass.discord.user.api.response.ViewUser;
+import com.imfreepass.discord.user.api.response.ViewUserImg;
 import com.imfreepass.discord.user.config.jwt.TokenProvider;
 import com.imfreepass.discord.user.entity.User;
+import com.imfreepass.discord.user.entity.User_Img;
 import com.imfreepass.discord.user.service.MailService;
 import com.imfreepass.discord.user.service.UserService;
 import com.imfreepass.discord.user.service.User_ImgService;
 
 import jakarta.mail.MessagingException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -60,7 +64,11 @@ public class UserApi {
 		return userService.allUser();
 	}
 
-	// 회원가입
+	/**
+	 * 회원가입 후 기본 프로필 이미지 등록 
+	 * @param user
+	 * @return
+	 */
 	@PostMapping("/register")
 	public ResponseEntity<String> register(@RequestBody CreateUser user) {
 		try {
@@ -74,7 +82,11 @@ public class UserApi {
 		}
 	}
 
-	// 로그인
+	/**
+	 * 로그인
+	 * @param user
+	 * @return
+	 */
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> login(@RequestBody LoginUser user) {
 		Optional<User> view = userService.selectEmail(user.getEmail());
@@ -94,7 +106,11 @@ public class UserApi {
 		}
 	}
 
-	// refreshToken 재발급
+	/**
+	 *  refreshToken 재발급
+	 * @param user
+	 * @return
+	 */
 	@PostMapping("/refresh")
 	public ResponseEntity<LoginResponse> refreshToken(@RequestBody LoginUser user) {
 
@@ -110,7 +126,11 @@ public class UserApi {
 		}
 	}
 
-	// 로그아웃
+	/**
+	 * 로그아웃
+	 * @param user
+	 * @return
+	 */
 	@PostMapping("/logout")
 	public ResponseEntity<String> logout(@RequestBody LoginUser user) {
 		try {
@@ -122,7 +142,13 @@ public class UserApi {
 		}
 	}
 
-	// 비밀번호 변경 이메일 보내기
+	/**
+	 * 비밀번호 변경 이메일 보내기
+	 * @param emailDto
+	 * @return
+	 * @throws MessagingException
+	 * @throws UnsupportedEncodingException
+	 */
 	@PostMapping("/email")
 	public String mailConfirm(@RequestBody SendEmail emailDto) throws MessagingException, UnsupportedEncodingException {
 		Optional<User> userOptional = userService.findByEmail(emailDto.getEmail());
@@ -135,13 +161,21 @@ public class UserApi {
 	    }
 	}
 
-	// 비밀번호 변경 이메일 보기
+	/**
+	 * 비밀번호 변경 이메일 보기
+	 * @param tokenLink
+	 * @return
+	 */
 	@GetMapping("/email/{tokenLink}")
 	public String chagePw(@PathVariable(name = "tokenLink") String tokenLink) {
 		return "테스트";
 	}
 
-	// 비밀번호 변경 버튼 클릭
+	/**
+	 * 비밀번호 변경 버튼 클릭
+	 * @param pwDto
+	 * @return
+	 */
 	@PutMapping("/email")
 	public ResponseEntity<String> resetPassword(@RequestBody PasswordChage pwDto) {
 		Optional<User> user = userService.selectEmail(pwDto.getEmail());
@@ -155,7 +189,11 @@ public class UserApi {
 		}
 	}
 
-	// 비밀번호 변경 
+	/**
+	 * 닉네임 변경
+	 * @param pwDto
+	 * @return
+	 */
 	@PutMapping("/user/changepw")
 	public ResponseEntity<String> changePassword(@RequestBody PasswordChage pwDto){
 		Optional<User> optionUser = userService.findByEmail(pwDto.getEmail());
@@ -169,7 +207,11 @@ public class UserApi {
 		}
 	}
 	
-	// 닉네임 변경 
+	/**
+	 * 닉네임 변경
+	 * @param nickDto
+	 * @return
+	 */
 	@PutMapping("/user/changenickname")
 	public ResponseEntity<String> changeNickname(@RequestBody NicknameChange nickDto){
 		Optional<User> optionUser = userService.findByEmail(nickDto.getEmail());
@@ -183,14 +225,32 @@ public class UserApi {
 		}
 	}
 	
-	// 프로필 등록 
+	/**
+	 * 프로필 등록
+	 * @param files
+	 * @param userId
+	 * @return
+	 */
 	@PostMapping("/user/profile/img")
+	@Transactional
 	public ResponseEntity<String> addProfileImg(
 			@RequestPart(value = "imgs", required = false) List<MultipartFile> files, 
-			@RequestPart(value = "user", required = false) Long user_id
+			@RequestPart(value = "user", required = false) User userId
 			){
 		try {
-			imgService.addProfile(files, user_id);
+			Optional<User_Img> img = imgService.findUserImg(userId);
+			File directory = new File("src/main/resources/static/img/user_profile/" + userId.getUserId());
+	            // 디렉토리 안에 파일이 있는지 확인
+	            File[] fileDirectory = directory.listFiles();
+	            if (fileDirectory == null || fileDirectory.length == 0) {
+	                System.out.println("디렉토리에 파일이 없습니다.");
+	            } else {
+	                System.out.println("디렉토리에 파일이 있습니다.");
+	                Long userImgId = img.get().getUserImgId();
+	    			imgService.imgRemove(userImgId, userId);
+	            }
+	            imgService.imgDbRemove(img.get().getUserImgId());
+	            imgService.addProfile(files, userId);
 			return ResponseEntity.ok("이미지가 등록되었습니다.");
 		}catch (Exception e) {
 			e.printStackTrace();
@@ -198,16 +258,23 @@ public class UserApi {
 		}
 	}
 	
-	// 프로필 삭제 
-	@PostMapping("/user/profile/img/remove")
-	public ResponseEntity<String> removeProfile(@RequestBody AddAndRemoveProfile profile){
+	/**
+	 * 기본 프로필로 변경 
+	 * @param profile
+	 * @return
+	 */
+	@PostMapping("/user/profile/img/reset")
+	@Transactional
+	public ResponseEntity<String> resetProfile(@RequestBody AddAndRemoveProfile profile){
 		try {
+			imgService.imgDbRemove(profile.getUserImgId());
 			imgService.imgRemove(profile.getUserImgId(), profile.getUserId());
-			return ResponseEntity.ok("이미지가 삭제되었습니다.");
+			User userId = profile.getUserId();
+			userService.insertRandom(userId);
+			return ResponseEntity.ok("이미지 삭제 후 기본 프로필로 변경되었습니다.");
 		} catch (Exception e) {
 			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미지 삭제에 실패했습니다.");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 변경에 실패했습니다.");
 		}
 	}
-	
 }
