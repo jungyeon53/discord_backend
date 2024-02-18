@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -78,6 +77,7 @@ public class UserApi {
 			// 중복된 이메일 예외 처리
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 가입된 이메일 주소입니다.");
 		} catch (Exception e) {
+			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원가입이 실패했습니다.");
 		}
 	}
@@ -89,7 +89,7 @@ public class UserApi {
 	 */
 	@PostMapping("/login")
 	public ResponseEntity<LoginResponse> login(@RequestBody LoginUser user) {
-		Optional<User> view = userService.selectEmail(user.getEmail());
+		Optional<User> view = userService.findByEmail(user.getEmail());
 		if (view.isPresent() && encoder.matches(user.getPassword(), view.get().getPassword())) {
 			// acessToken 발급
 			Duration accessTime = Duration.ofMinutes(30);
@@ -113,15 +113,20 @@ public class UserApi {
 	 */
 	@PostMapping("/refresh")
 	public ResponseEntity<LoginResponse> refreshToken(@RequestBody LoginUser user) {
-
-		Optional<User> view = userService.selectEmail(user.getEmail());
+		log.info(user.getEmail() + "이메일");
+		log.info(user.getRefreshToken() + "저장토큰");
+		
+		Optional<User> view = userService.findByEmail(user.getEmail());
 		String refreshToken = view.get().getRefreshToken();
+		log.info(refreshToken + "리프레쉬토큰");
 		if (refreshToken.equals(user.getRefreshToken())) {
+			log.info("흠");
 			Duration accessTime = Duration.ofMinutes(30);
 			String accessToken = tokenProvider.makeToken(user, accessTime);
 			LoginResponse response = new LoginResponse(user.getEmail(), accessToken, "accessToken 재발급되었습니다.");
 			return ResponseEntity.ok(response);
 		} else {
+			log.info("오류");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 	}
@@ -178,7 +183,7 @@ public class UserApi {
 	 */
 	@PutMapping("/email")
 	public ResponseEntity<String> resetPassword(@RequestBody PasswordChage pwDto) {
-		Optional<User> user = userService.selectEmail(pwDto.getEmail());
+		Optional<User> user = userService.findByEmail(pwDto.getEmail());
 		if (user.isPresent()) {
 			user.get().setPassword(BCrypt.hashpw(pwDto.getPassword(), BCrypt.gensalt()));
 
@@ -276,5 +281,14 @@ public class UserApi {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 변경에 실패했습니다.");
 		}
+	}
+	/**
+	 * 프로필 1명 조회 
+	 * @param userId
+	 * @return
+	 */
+	@GetMapping("/user/profile/{user_id}")
+	public Optional<User_Img> viewProfile(@PathVariable("user_id") User userId){
+		return imgService.findUserImg(userId);
 	}
 }

@@ -2,7 +2,7 @@ package com.imfreepass.discord.user.api.response;
 
 import java.time.ZonedDateTime;
 
-import com.imfreepass.discord.entity.State;
+import com.imfreepass.discord.user.entity.State;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

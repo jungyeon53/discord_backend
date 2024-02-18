@@ -2,8 +2,6 @@ package com.imfreepass.discord.user.entity;
 
 import java.time.ZonedDateTime;
 
-import com.imfreepass.discord.entity.State;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -33,7 +31,9 @@ public class User {
 	private Long userId;
 	@OneToOne
 	@JoinColumn(name = "state_id" , referencedColumnName = "state_id")
-	private State stateId; // 상태pk 
+	private State stateId; // 상태pk
+	@Column(name = "pre_state")
+	private int preState; // 이전 상태 
 	@Column(length = 50)
 	private String email;
 	@Column(length = 255)
@@ -46,6 +46,7 @@ public class User {
 	private String birth;
 	@Column(name = "join_date")
 	private ZonedDateTime joinDate; // 가입날짜 
+	@Column(length = 500)
 	private String refreshToken; // 리프레쉬 토큰 
 	
 }

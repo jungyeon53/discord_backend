@@ -1,4 +1,4 @@
-package com.imfreepass.discord.entity;
+package com.imfreepass.discord.user.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

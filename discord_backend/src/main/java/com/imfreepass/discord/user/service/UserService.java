@@ -11,9 +11,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.imfreepass.discord.user.api.request.CreateUser;
+import com.imfreepass.discord.user.entity.State;
 import com.imfreepass.discord.user.entity.User;
 import com.imfreepass.discord.user.entity.User_Img;
 import com.imfreepass.discord.user.repository.UserRepository;
+import com.imfreepass.discord.user.repository.StateRepository;
 import com.imfreepass.discord.user.repository.UserImgRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class UserService {
 	
 	private final UserRepository userRepository;
 	private final UserImgRepository imgRepository;
+	private final StateRepository stateRepository;
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 	/**
@@ -33,6 +36,7 @@ public class UserService {
 	 */
 	public User insert(CreateUser req) {
 		Optional<User> userOptional = userRepository.findByEmail(req.getEmail());
+		Optional<State> userState = stateRepository.findById(1L);
 		if(!userOptional.isPresent()) {
 			User user = User.builder()
 					.email(req.getEmail())
@@ -41,6 +45,8 @@ public class UserService {
 					.userHash(req.getUser_hash())
 					.birth(req.getBirth())
 					.joinDate(ZonedDateTime.now())
+					.stateId(userState.get())
+					.preState(1)
 					.build();
 			User save = userRepository.save(user);
 			insertRandom(save);
@@ -74,15 +80,6 @@ public class UserService {
 	 */
 	public List<User> allUser(){
 		return userRepository.findAll();
-	}
-	
-	/**
-	 * 유저 전체 조회 
-	 * @param email
-	 * @return
-	 */
-	public Optional<User> selectEmail(String email) {
-		return userRepository.findByEmail(email);
 	}
 	
 	/**
@@ -140,5 +137,8 @@ public class UserService {
 	public int modifyNickname(Long user_id, String nickname) {
 		return userRepository.updateNickname(user_id, nickname);
 	}
-
+	
+	public Optional<User> findById(Long userId){
+		return userRepository.findById(userId);
+	}
 }
