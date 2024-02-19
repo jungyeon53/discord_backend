@@ -31,12 +31,15 @@ import com.imfreepass.discord.user.api.request.PasswordChage;
 import com.imfreepass.discord.user.api.request.SendEmail;
 import com.imfreepass.discord.user.api.response.LoginResponse;
 import com.imfreepass.discord.user.api.response.LoginUser;
+import com.imfreepass.discord.user.api.response.ViewState;
 import com.imfreepass.discord.user.api.response.ViewUser;
 import com.imfreepass.discord.user.api.response.ViewUserImg;
 import com.imfreepass.discord.user.config.jwt.TokenProvider;
+import com.imfreepass.discord.user.entity.State;
 import com.imfreepass.discord.user.entity.User;
 import com.imfreepass.discord.user.entity.User_Img;
 import com.imfreepass.discord.user.service.MailService;
+import com.imfreepass.discord.user.service.StateService;
 import com.imfreepass.discord.user.service.UserService;
 import com.imfreepass.discord.user.service.User_ImgService;
 
@@ -56,6 +59,7 @@ public class UserApi {
 	private final TokenProvider tokenProvider;
 	private final MailService mailService;
 	private final User_ImgService imgService;
+	private final StateService stateService;
 
 	@GetMapping("/register")
 	@CrossOrigin
@@ -64,7 +68,8 @@ public class UserApi {
 	}
 
 	/**
-	 * 회원가입 후 기본 프로필 이미지 등록 
+	 * 회원가입 후 기본 프로필 이미지 등록
+	 * 
 	 * @param user
 	 * @return
 	 */
@@ -84,22 +89,39 @@ public class UserApi {
 
 	/**
 	 * 로그인
+	 * 
 	 * @param user
 	 * @return
 	 */
 	@PostMapping("/login")
+	@Transactional
 	public ResponseEntity<LoginResponse> login(@RequestBody LoginUser user) {
 		Optional<User> view = userService.findByEmail(user.getEmail());
 		if (view.isPresent() && encoder.matches(user.getPassword(), view.get().getPassword())) {
-			// acessToken 발급
 			Duration accessTime = Duration.ofMinutes(30);
 			String accessToken = tokenProvider.makeToken(user, accessTime);
-			// refreshToken 발급
 			Duration refeshTime = Duration.ofDays(10);
 			String refeshToken = tokenProvider.makeToken(user, refeshTime);
-			// refreshToken 저장
 			userService.saveRefreshToken(user.getEmail(), refeshToken);
 			LoginResponse response = new LoginResponse(user.getEmail(), accessToken, refeshToken, "로그인 성공입니다.");
+			// 로그인 상태로 변경
+			int number = view.get().getPreState();
+			State stateId = new State();
+			switch (number) {
+			case 1:
+				stateId.setStateId(1L);
+				break;
+			case 2:
+				stateId.setStateId(2L);
+				break;
+			case 3:
+				stateId.setStateId(3L);
+				break;
+			default:
+				stateId.setStateId(1L);
+				break;
+			}
+			userService.modifyState(stateId, view.get().getUserId());
 			return ResponseEntity.ok(response);
 		} else {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -107,7 +129,8 @@ public class UserApi {
 	}
 
 	/**
-	 *  refreshToken 재발급
+	 * refreshToken 재발급
+	 * 
 	 * @param user
 	 * @return
 	 */
@@ -115,7 +138,7 @@ public class UserApi {
 	public ResponseEntity<LoginResponse> refreshToken(@RequestBody LoginUser user) {
 		log.info(user.getEmail() + "이메일");
 		log.info(user.getRefreshToken() + "저장토큰");
-		
+
 		Optional<User> view = userService.findByEmail(user.getEmail());
 		String refreshToken = view.get().getRefreshToken();
 		log.info(refreshToken + "리프레쉬토큰");
@@ -133,22 +156,37 @@ public class UserApi {
 
 	/**
 	 * 로그아웃
+	 * 
 	 * @param user
 	 * @return
 	 */
 	@PostMapping("/logout")
+	@Transactional
 	public ResponseEntity<String> logout(@RequestBody LoginUser user) {
-		try {
-			userService.removeRefreshToken(user.getEmail());
-			return ResponseEntity.ok("로그아웃 완료입니다.");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그아웃 실패입니다.");
-		}
+	    try {
+	        Optional<User> view = userService.findByEmail(user.getEmail());
+
+	        if (view.isPresent()) {
+	            Long userId = view.get().getUserId();
+	            Long stateId = view.get().getStateId().getStateId();
+	            userService.modifyPreState(userId, stateId == 1 ? 4 : (stateId == 2 ? 2 : 3));
+	            State newState = new State();
+	            newState.setStateId(4L);
+	            userService.modifyState(newState, userId);
+	            userService.removeRefreshToken(user.getEmail());
+	            return ResponseEntity.ok("로그아웃 완료입니다.");
+	        } 
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그아웃 실패입니다.");
+	    }
+		return null;
 	}
+
 
 	/**
 	 * 비밀번호 변경 이메일 보내기
+	 * 
 	 * @param emailDto
 	 * @return
 	 * @throws MessagingException
@@ -162,12 +200,13 @@ public class UserApi {
 			String tokenLink = mailService.sendEmail(emailDto.getEmail(), user_id);
 			return tokenLink;
 		} else {
-	    	throw new ResponseStatusException(HttpStatus.NOT_FOUND, "가입되지 않은 사용자입니다");
-	    }
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "가입되지 않은 사용자입니다");
+		}
 	}
 
 	/**
 	 * 비밀번호 변경 이메일 보기
+	 * 
 	 * @param tokenLink
 	 * @return
 	 */
@@ -178,6 +217,7 @@ public class UserApi {
 
 	/**
 	 * 비밀번호 변경 버튼 클릭
+	 * 
 	 * @param pwDto
 	 * @return
 	 */
@@ -196,13 +236,14 @@ public class UserApi {
 
 	/**
 	 * 닉네임 변경
+	 * 
 	 * @param pwDto
 	 * @return
 	 */
 	@PutMapping("/user/changepw")
-	public ResponseEntity<String> changePassword(@RequestBody PasswordChage pwDto){
+	public ResponseEntity<String> changePassword(@RequestBody PasswordChage pwDto) {
 		Optional<User> optionUser = userService.findByEmail(pwDto.getEmail());
-		if(optionUser.isPresent() && encoder.matches(pwDto.getCurrentPassword(), optionUser.get().getPassword())) {
+		if (optionUser.isPresent() && encoder.matches(pwDto.getCurrentPassword(), optionUser.get().getPassword())) {
 			User user = optionUser.get();
 			user.setPassword(BCrypt.hashpw(pwDto.getPassword(), BCrypt.gensalt()));
 			userService.modifyPw(user.getUserId(), user.getPassword());
@@ -211,16 +252,17 @@ public class UserApi {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("변경이 실패되었습니다");
 		}
 	}
-	
+
 	/**
 	 * 닉네임 변경
+	 * 
 	 * @param nickDto
 	 * @return
 	 */
 	@PutMapping("/user/changenickname")
-	public ResponseEntity<String> changeNickname(@RequestBody NicknameChange nickDto){
+	public ResponseEntity<String> changeNickname(@RequestBody NicknameChange nickDto) {
 		Optional<User> optionUser = userService.findByEmail(nickDto.getEmail());
-		if(optionUser.isPresent()) {
+		if (optionUser.isPresent()) {
 			User user = optionUser.get();
 			user.setNickname(nickDto.getNickname());
 			userService.modifyNickname(user.getUserId(), user.getNickname());
@@ -229,9 +271,10 @@ public class UserApi {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("닉네임 수정 실패했습니다.");
 		}
 	}
-	
+
 	/**
 	 * 프로필 등록
+	 * 
 	 * @param files
 	 * @param userId
 	 * @return
@@ -239,38 +282,38 @@ public class UserApi {
 	@PostMapping("/user/profile/img")
 	@Transactional
 	public ResponseEntity<String> addProfileImg(
-			@RequestPart(value = "imgs", required = false) List<MultipartFile> files, 
-			@RequestPart(value = "user", required = false) User userId
-			){
+			@RequestPart(value = "imgs", required = false) List<MultipartFile> files,
+			@RequestPart(value = "user", required = false) User userId) {
 		try {
 			Optional<User_Img> img = imgService.findUserImg(userId);
 			File directory = new File("src/main/resources/static/img/user_profile/" + userId.getUserId());
-	            // 디렉토리 안에 파일이 있는지 확인
-	            File[] fileDirectory = directory.listFiles();
-	            if (fileDirectory == null || fileDirectory.length == 0) {
-	                System.out.println("디렉토리에 파일이 없습니다.");
-	            } else {
-	                System.out.println("디렉토리에 파일이 있습니다.");
-	                Long userImgId = img.get().getUserImgId();
-	    			imgService.imgRemove(userImgId, userId);
-	            }
-	            imgService.imgDbRemove(img.get().getUserImgId());
-	            imgService.addProfile(files, userId);
+			// 디렉토리 안에 파일이 있는지 확인
+			File[] fileDirectory = directory.listFiles();
+			if (fileDirectory == null || fileDirectory.length == 0) {
+				System.out.println("디렉토리에 파일이 없습니다.");
+			} else {
+				System.out.println("디렉토리에 파일이 있습니다.");
+				Long userImgId = img.get().getUserImgId();
+				imgService.imgRemove(userImgId, userId);
+			}
+			imgService.imgDbRemove(img.get().getUserImgId());
+			imgService.addProfile(files, userId);
 			return ResponseEntity.ok("이미지가 등록되었습니다.");
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("이미지 등록에 실패했습니다.");
 		}
 	}
-	
+
 	/**
-	 * 기본 프로필로 변경 
+	 * 기본 프로필로 변경
+	 * 
 	 * @param profile
 	 * @return
 	 */
 	@PostMapping("/user/profile/img/reset")
 	@Transactional
-	public ResponseEntity<String> resetProfile(@RequestBody AddAndRemoveProfile profile){
+	public ResponseEntity<String> resetProfile(@RequestBody AddAndRemoveProfile profile) {
 		try {
 			imgService.imgDbRemove(profile.getUserImgId());
 			imgService.imgRemove(profile.getUserImgId(), profile.getUserId());
@@ -282,13 +325,32 @@ public class UserApi {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 변경에 실패했습니다.");
 		}
 	}
+
 	/**
-	 * 프로필 1명 조회 
+	 * 프로필 1명 조회
+	 * 
 	 * @param userId
 	 * @return
 	 */
 	@GetMapping("/user/profile/{user_id}")
-	public Optional<User_Img> viewProfile(@PathVariable("user_id") User userId){
+	public Optional<User_Img> viewProfile(@PathVariable("user_id") User userId) {
 		return imgService.findUserImg(userId);
 	}
+	
+	/**
+	 * 프로필 상태 변경 
+	 * @param user
+	 * @return
+	 */
+	@PutMapping("/user/state")
+	public ResponseEntity<String> changeStatus(@RequestBody ViewUser user) {
+		try {
+			userService.modifyState(user.getStateId(), user.getUserId());
+			return ResponseEntity.ok("상태 변경이 완료되었습니다.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 변경에 실패했습니다.");
+		}
+	}
+
 }

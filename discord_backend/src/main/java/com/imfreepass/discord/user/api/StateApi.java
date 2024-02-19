@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.imfreepass.discord.user.api.request.AddState;
+import com.imfreepass.discord.user.api.response.ViewUser;
 import com.imfreepass.discord.user.entity.State;
 import com.imfreepass.discord.user.service.StateService;
 

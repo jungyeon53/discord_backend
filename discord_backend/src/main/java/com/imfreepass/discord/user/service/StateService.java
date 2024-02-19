@@ -1,5 +1,6 @@
 package com.imfreepass.discord.user.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -56,4 +57,16 @@ public class StateService {
     "stateText" : "온라인으로 표시되지는 않지만, Discord의 모든 기능을 이용할 수 있어요"
 }
 	 */
+	
+	/**
+	 * 모든 상태 조회 
+	 * @return
+	 */
+	public List<State> allState() {
+		return stateRepository.findAll();
+	}
+	public void save(State state) {
+		stateRepository.save(state);
+		
+	}
 }

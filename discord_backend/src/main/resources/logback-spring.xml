@@ -9,13 +9,13 @@
     <logger name="com.imfreepass.discord" level="info"/>
 
     <!-- log4j2-jdbc4 -->
+    <logger name="jdbc.param" level="TRACE" />
     <logger name="jdbc" level="OFF" />
     <logger name="jdbc.sqlonly" level="OFF" />
     <logger name="jdbc.sqltiming" level="DEBUG" />
     <logger name="jdbc.resultset" level="OFF" />
     <logger name="jdbc.resultsettable" level="DEBUG" />
     <logger name="jdbc.connection" level="OFF" />
-    
     <!-- log4j2-jdbc4 -->
 
     <root level="info">

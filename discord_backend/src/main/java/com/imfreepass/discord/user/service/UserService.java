@@ -49,11 +49,10 @@ public class UserService {
 					.preState(1)
 					.build();
 			User save = userRepository.save(user);
-			insertRandom(save);
+			return save;
 		} else {
 			throw new DataIntegrityViolationException("중복된 이메일 주소입니다.");
 		}
-		return null;
 	}
 	
 	/**
@@ -138,7 +137,22 @@ public class UserService {
 		return userRepository.updateNickname(user_id, nickname);
 	}
 	
-	public Optional<User> findById(Long userId){
-		return userRepository.findById(userId);
+	/**
+	 * 상태 변경 
+	 * @param stateId
+	 * @param userId
+	 * @return
+	 */
+	public int modifyState(State stateId, Long userId) {
+		return userRepository.updateState(userId, stateId);
+	}
+	
+	/**
+	 * 이전 상태 변경 
+	 * @param userId
+	 * @param preState
+	 */
+	public void modifyPreState(Long userId, int preState) {
+		userRepository.updatePreState(userId, preState);
 	}
 }
