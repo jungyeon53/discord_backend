@@ -33,4 +33,5 @@ public class Server_User {
 	@ManyToOne
 	@JoinColumn(name = "server_id", referencedColumnName = "server_id")
 	private Server serverId;
+	
 }

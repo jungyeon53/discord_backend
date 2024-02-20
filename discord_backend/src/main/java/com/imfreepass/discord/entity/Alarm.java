@@ -34,5 +34,5 @@ public class Alarm {
 	@JoinColumn(name="user_id", referencedColumnName = "user_id")
 	private User userId; // 받은 사람 
 	@Column(name = "chat_state")
-	private int chatState; // 채팅 확인 여부 
+	private int chatState; // 채팅 확인 여부 dd 
 }

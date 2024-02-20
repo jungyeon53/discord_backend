@@ -28,6 +28,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.modelmapper:modelmapper:2.4.4'
+	
 	//swagger 설정
     //http://localhost:8081/swagger-ui/index.html
     implementation 'io.jsonwebtoken:jjwt:0.9.1'

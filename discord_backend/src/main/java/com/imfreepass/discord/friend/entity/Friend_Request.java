@@ -1,4 +1,4 @@
-package com.imfreepass.discord.entity;
+package com.imfreepass.discord.friend.entity;
 
 import com.imfreepass.discord.user.entity.User;
 
@@ -34,5 +34,5 @@ public class Friend_Request {
 	@JoinColumn(name = "send_user_id", referencedColumnName = "user_id")
 	private User sendUserId; // 보낸친구
 	@Column(name = "friend_state")
-	private int friendState; // 친구 상태 
+	private int friendState; // 친구 상태 (0) 친구아님 (1) 친구 (2) 차단 
 }

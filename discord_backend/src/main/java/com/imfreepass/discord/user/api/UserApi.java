@@ -59,7 +59,6 @@ public class UserApi {
 	private final TokenProvider tokenProvider;
 	private final MailService mailService;
 	private final User_ImgService imgService;
-	private final StateService stateService;
 
 	@GetMapping("/register")
 	@CrossOrigin

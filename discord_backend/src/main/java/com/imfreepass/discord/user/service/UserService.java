@@ -49,6 +49,7 @@ public class UserService {
 					.preState(1)
 					.build();
 			User save = userRepository.save(user);
+			insertRandom(save);
 			return save;
 		} else {
 			throw new DataIntegrityViolationException("중복된 이메일 주소입니다.");
@@ -154,5 +155,9 @@ public class UserService {
 	 */
 	public void modifyPreState(Long userId, int preState) {
 		userRepository.updatePreState(userId, preState);
+	}
+	
+	public Optional<User> findByUserId(Long userId) {
+		return userRepository.findById(userId);
 	}
 }

@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 
 import javax.management.RuntimeErrorException;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -104,6 +106,5 @@ public class User_ImgService {
 	public Optional<User_Img> findUserImg(User userId) {
 		return imgRepository.findByUserId(userId);
 	}
-	
 
 }

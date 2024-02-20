@@ -1,4 +1,4 @@
-package com.imfreepass.discord.entity;
+package com.imfreepass.discord.friend.entity;
 
 
 import com.imfreepass.discord.user.entity.User;
