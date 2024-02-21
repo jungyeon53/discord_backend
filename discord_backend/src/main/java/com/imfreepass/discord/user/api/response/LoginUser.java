@@ -18,6 +18,4 @@ public class LoginUser {
 	private String message;
 	private String acessToken;
 	private String refreshToken;
-	
-	
 }

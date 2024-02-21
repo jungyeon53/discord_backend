@@ -1,5 +1,7 @@
 package com.imfreepass.discord.user.entity;
 
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,8 +27,10 @@ public class State {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "state_id")
 	private Long stateId;
+	@Schema(hidden = true)
 	@Column(length = 50, name = "state_name")
 	private String stateName;
+	@Schema(hidden = true)
 	@Column(length = 50, name = "state_text")
 	private String stateText;
 }

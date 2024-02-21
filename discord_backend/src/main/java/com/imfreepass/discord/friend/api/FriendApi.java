@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import com.imfreepass.discord.friend.api.request.SendFriendRequest;
 import com.imfreepass.discord.friend.api.response.ViewFriendResponse;
 import com.imfreepass.discord.friend.entity.Friend_Request;
 import com.imfreepass.discord.friend.service.FriendService;
+import com.imfreepass.discord.user.entity.User;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,8 +42,13 @@ public class FriendApi {
 		}
 	}
 	
-	@GetMapping("/response")
-	public Optional<Friend_Request> getFriendRequests(@RequestBody ViewFriendResponse res){
-		return friendService.getFriendRequests(res);
+	/**
+	 * 
+	 * @param res
+	 * @return
+	 */
+	@GetMapping("/response/{userId}")
+	public Optional<Friend_Request> getFriendRequests(@PathVariable(name = "userId") User userId){
+		return friendService.getFriendRequests(userId);
 	}
 }

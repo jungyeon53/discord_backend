@@ -26,20 +26,18 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.imfreepass.discord.user.api.request.AddAndRemoveProfile;
 import com.imfreepass.discord.user.api.request.CreateUser;
+import com.imfreepass.discord.user.api.request.Logout;
 import com.imfreepass.discord.user.api.request.NicknameChange;
 import com.imfreepass.discord.user.api.request.PasswordChage;
 import com.imfreepass.discord.user.api.request.SendEmail;
+import com.imfreepass.discord.user.api.request.StateChange;
 import com.imfreepass.discord.user.api.response.LoginResponse;
 import com.imfreepass.discord.user.api.response.LoginUser;
-import com.imfreepass.discord.user.api.response.ViewState;
-import com.imfreepass.discord.user.api.response.ViewUser;
-import com.imfreepass.discord.user.api.response.ViewUserImg;
 import com.imfreepass.discord.user.config.jwt.TokenProvider;
 import com.imfreepass.discord.user.entity.State;
 import com.imfreepass.discord.user.entity.User;
 import com.imfreepass.discord.user.entity.User_Img;
 import com.imfreepass.discord.user.service.MailService;
-import com.imfreepass.discord.user.service.StateService;
 import com.imfreepass.discord.user.service.UserService;
 import com.imfreepass.discord.user.service.User_ImgService;
 
@@ -59,7 +57,11 @@ public class UserApi {
 	private final TokenProvider tokenProvider;
 	private final MailService mailService;
 	private final User_ImgService imgService;
-
+	
+	/**
+	 * 모든 user 보기 
+	 * @return
+	 */
 	@GetMapping("/register")
 	@CrossOrigin
 	public List<User> viewAllUser() {
@@ -80,8 +82,9 @@ public class UserApi {
 		} catch (DataIntegrityViolationException e) {
 			// 중복된 이메일 예외 처리
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이미 가입된 이메일 주소입니다.");
+		}catch (RuntimeException e) {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("중복된 유저해시입니다.");
 		} catch (Exception e) {
-			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("회원가입이 실패했습니다.");
 		}
 	}
@@ -128,7 +131,7 @@ public class UserApi {
 	}
 
 	/**
-	 * refreshToken 재발급
+	 * accessToken 재발급
 	 * 
 	 * @param user
 	 * @return
@@ -142,13 +145,11 @@ public class UserApi {
 		String refreshToken = view.get().getRefreshToken();
 		log.info(refreshToken + "리프레쉬토큰");
 		if (refreshToken.equals(user.getRefreshToken())) {
-			log.info("흠");
 			Duration accessTime = Duration.ofMinutes(30);
 			String accessToken = tokenProvider.makeToken(user, accessTime);
 			LoginResponse response = new LoginResponse(user.getEmail(), accessToken, "accessToken 재발급되었습니다.");
 			return ResponseEntity.ok(response);
 		} else {
-			log.info("오류");
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 	}
@@ -161,7 +162,7 @@ public class UserApi {
 	 */
 	@PostMapping("/logout")
 	@Transactional
-	public ResponseEntity<String> logout(@RequestBody LoginUser user) {
+	public ResponseEntity<String> logout(@RequestBody Logout user) {
 	    try {
 	        Optional<User> view = userService.findByEmail(user.getEmail());
 
@@ -342,7 +343,7 @@ public class UserApi {
 	 * @return
 	 */
 	@PutMapping("/user/state")
-	public ResponseEntity<String> changeStatus(@RequestBody ViewUser user) {
+	public ResponseEntity<String> changeStatus(@RequestBody StateChange user) {
 		try {
 			userService.modifyState(user.getStateId(), user.getUserId());
 			return ResponseEntity.ok("상태 변경이 완료되었습니다.");

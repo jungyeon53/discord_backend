@@ -44,5 +44,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query("update User u set u.preState = :preState where u.userId = :userId")
 	void updatePreState(@Param("userId") Long userId, @Param("preState") int preState);
 
+	Optional<User> findByUserHash(String user_hash);
+
 
 }

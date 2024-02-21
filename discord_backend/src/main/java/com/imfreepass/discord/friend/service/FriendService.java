@@ -44,8 +44,8 @@ public class FriendService {
 	    return friend;
 	}
 	
-	public Optional<Friend_Request> getFriendRequests(ViewFriendResponse res){
-		return friendRepository.findById(res.getUserId().getUserId());
+	public Optional<Friend_Request> getFriendRequests(User userId){
+		return friendRepository.findById(userId.getUserId());
 	}
 	
 	

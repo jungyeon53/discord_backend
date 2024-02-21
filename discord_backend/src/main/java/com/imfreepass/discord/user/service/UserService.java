@@ -19,9 +19,11 @@ import com.imfreepass.discord.user.repository.StateRepository;
 import com.imfreepass.discord.user.repository.UserImgRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class UserService {
 	
 	private final UserRepository userRepository;
@@ -35,26 +37,36 @@ public class UserService {
 	 * @return
 	 */
 	public User insert(CreateUser req) {
-		Optional<User> userOptional = userRepository.findByEmail(req.getEmail());
-		Optional<State> userState = stateRepository.findById(1L);
-		if(!userOptional.isPresent()) {
-			User user = User.builder()
-					.email(req.getEmail())
-					.password(bCryptPasswordEncoder.encode(req.getPassword()))
-					.nickname(req.getNickname())
-					.userHash(req.getUser_hash())
-					.birth(req.getBirth())
-					.joinDate(ZonedDateTime.now())
-					.stateId(userState.get())
-					.preState(1)
-					.build();
-			User save = userRepository.save(user);
-			insertRandom(save);
-			return save;
-		} else {
-			throw new DataIntegrityViolationException("중복된 이메일 주소입니다.");
-		}
+	    // 중복된 이메일 주소 검사
+	    userRepository.findByEmail(req.getEmail())
+	            .ifPresent(email -> {
+	                throw new DataIntegrityViolationException("중복된 이메일 주소입니다.");
+	            });
+	    // 유저 해시 중복 검사
+	    userRepository.findByUserHash(req.getUserHash())
+	            .ifPresent(user_hash -> {
+	                throw new RuntimeException("중복된 유저해시입니다.");
+	            });
+	    // 상태 정보 가져오기
+	    State userState = stateRepository.findById(4L)
+	            .orElseThrow(() -> new IllegalStateException("상태를 찾을 수없습니다."));
+	    // 회원가입
+	    User user = User.builder()
+	            .email(req.getEmail())
+	            .password(bCryptPasswordEncoder.encode(req.getPassword()))
+	            .nickname(req.getNickname())
+	            .userHash(req.getUserHash())
+	            .birth(req.getBirth())
+	            .joinDate(ZonedDateTime.now())
+	            .stateId(userState)
+	            .preState(1)
+	            .build();
+	    User savedUser = userRepository.save(user);
+	    insertRandom(savedUser);
+
+	    return savedUser;
 	}
+
 	
 	/**
 	 * 랜덤 기본 이미지
@@ -83,7 +95,7 @@ public class UserService {
 	}
 	
 	/**
-	 * refeshToken 저장 
+	 * acessToken 재발급 
 	 * @param email
 	 * @param refreshToken
 	 * @return
@@ -157,6 +169,10 @@ public class UserService {
 		userRepository.updatePreState(userId, preState);
 	}
 	
+	/** userId로 조회 
+	 * @param userId
+	 * @return
+	 */
 	public Optional<User> findByUserId(Long userId) {
 		return userRepository.findById(userId);
 	}
