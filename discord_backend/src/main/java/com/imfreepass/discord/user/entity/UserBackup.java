@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name="user_backup")
-public class User_Backup {
+public class UserBackup {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

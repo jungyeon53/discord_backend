@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.imfreepass.discord.friend.api.request.SeachUser;
 import com.imfreepass.discord.user.api.request.AddAndRemoveProfile;
 import com.imfreepass.discord.user.api.request.CreateUser;
 import com.imfreepass.discord.user.api.request.Logout;
@@ -33,13 +34,14 @@ import com.imfreepass.discord.user.api.request.SendEmail;
 import com.imfreepass.discord.user.api.request.StateChange;
 import com.imfreepass.discord.user.api.response.LoginResponse;
 import com.imfreepass.discord.user.api.response.LoginUser;
+import com.imfreepass.discord.user.api.response.ViewUser;
 import com.imfreepass.discord.user.config.jwt.TokenProvider;
 import com.imfreepass.discord.user.entity.State;
 import com.imfreepass.discord.user.entity.User;
-import com.imfreepass.discord.user.entity.User_Img;
+import com.imfreepass.discord.user.entity.UserImg;
 import com.imfreepass.discord.user.service.MailService;
 import com.imfreepass.discord.user.service.UserService;
-import com.imfreepass.discord.user.service.User_ImgService;
+import com.imfreepass.discord.user.service.UserImgService;
 
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
@@ -56,7 +58,7 @@ public class UserApi {
 	private final PasswordEncoder encoder;
 	private final TokenProvider tokenProvider;
 	private final MailService mailService;
-	private final User_ImgService imgService;
+	private final UserImgService imgService;
 	
 	/**
 	 * 모든 user 보기 
@@ -285,7 +287,7 @@ public class UserApi {
 			@RequestPart(value = "imgs", required = false) List<MultipartFile> files,
 			@RequestPart(value = "user", required = false) User userId) {
 		try {
-			Optional<User_Img> img = imgService.findUserImg(userId);
+			Optional<UserImg> img = imgService.findUserImg(userId);
 			File directory = new File("src/main/resources/static/img/user_profile/" + userId.getUserId());
 			// 디렉토리 안에 파일이 있는지 확인
 			File[] fileDirectory = directory.listFiles();
@@ -333,7 +335,7 @@ public class UserApi {
 	 * @return
 	 */
 	@GetMapping("/user/profile/{user_id}")
-	public Optional<User_Img> viewProfile(@PathVariable("user_id") User userId) {
+	public Optional<UserImg> viewProfile(@PathVariable("user_id") User userId) {
 		return imgService.findUserImg(userId);
 	}
 	
@@ -351,6 +353,21 @@ public class UserApi {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("프로필 변경에 실패했습니다.");
 		}
+	}
+	
+	/**
+	 * 유저 검색
+	 * @param req
+	 * @return
+	 */
+	@GetMapping("/user/serach")
+	public Optional<User> serachUsers(@RequestBody SeachUser req) {
+		Optional<User> getNickname = userService.findByNickname(req.getNickname());
+		if(getNickname.isEmpty()) {
+			Optional<User> getUserHash = userService.findByUserHash(req.getUserHash());			
+			return getUserHash;
+		}
+		return getNickname;
 	}
 
 }

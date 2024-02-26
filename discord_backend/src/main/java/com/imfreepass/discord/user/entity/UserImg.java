@@ -1,6 +1,5 @@
-package com.imfreepass.discord.friend.entity;
+package com.imfreepass.discord.user.entity;
 
-import com.imfreepass.discord.user.entity.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,19 +20,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="friend_request")
-public class Friend_Request {
+@Table(name="user_img")
+public class UserImg {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "friend_request_id")
-	private Long friendRequestId; // 친구신청 pk 
+	@Column(name = "user_img_id")
+	private Long userImgId; // img PK
 	@ManyToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
-	private User userId; // 받은 친구 
-	@ManyToOne
-	@JoinColumn(name = "send_user_id", referencedColumnName = "user_id")
-	private User sendUserId; // 보낸친구
-	@Column(name = "friend_state")
-	private int friendState; // 친구 상태 (0) 친구아님 (1) 친구 (2) 차단 
+	private User userId;
+	@Column(length = 50)
+	private String original; // 원본 이름 
+	@Column(length = 1000)
+	private String path; // 경로 
 }

@@ -1,6 +1,4 @@
-package com.imfreepass.discord.user.entity;
-
-import com.imfreepass.discord.entity.Badge;
+package com.imfreepass.discord.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,17 +18,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="user_badge")
-public class User_Badge {
+@Table(name="chat_attach")
+public class ChatAttach {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_badge_id")
-	private Long userBadgeId;
+	@Column(name = "chat_img_id")
+	private Long chatImgId;
 	@ManyToOne
-	@JoinColumn(name = "user_id" , referencedColumnName = "user_id")
-	private User userId;
-	@ManyToOne
-	@JoinColumn(name = "badge_id", referencedColumnName = "badge_id")
-	private Badge badgeId;
+	@JoinColumn(name = "chat_id", referencedColumnName = "chat_id")
+	private Chat chatId;
+	@Column(length = 50)
+	private String original;
+	@Column(length = 50)
+	private String path;
+	
 }

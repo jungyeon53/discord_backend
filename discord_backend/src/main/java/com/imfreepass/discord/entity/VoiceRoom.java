@@ -18,18 +18,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="chat_room")
-public class Chat_Room {
-	
+@Table(name="voice_room")
+public class VoiceRoom {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "chat_room_id")
-	private Long chatRoomId;
+	@Column(name = "voice_room_id")
+	private Long voiceRoomId;
 	@ManyToOne
 	@JoinColumn(name = "server_id", referencedColumnName = "server_id")
 	private Server serverId;
-	@Column(length = 50)
-	private String title;
+	@Column(length = 50, name = "voice_title")
+	private String voiceTitle;
 	@Column(name = "room_state")
 	private int roomState;
 }

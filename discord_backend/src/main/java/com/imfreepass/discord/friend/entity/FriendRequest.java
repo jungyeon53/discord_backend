@@ -1,4 +1,4 @@
-package com.imfreepass.discord.entity;
+package com.imfreepass.discord.friend.entity;
 
 import com.imfreepass.discord.user.entity.User;
 
@@ -20,18 +20,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="server_user")
-public class Server_User {
+@Table(name="friend_request")
+public class FriendRequest {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "chat_room_user_id")
-	private Long chatRoomUserId;
+	@Column(name = "friend_request_id")
+	private Long friendRequestId; // 친구신청 pk 
 	@ManyToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
-	private User userId;
+	private User userId; // 받은 친구 
 	@ManyToOne
-	@JoinColumn(name = "server_id", referencedColumnName = "server_id")
-	private Server serverId;
-	
+	@JoinColumn(name = "send_user_id", referencedColumnName = "user_id")
+	private User sendUserId; // 보낸친구
+	@Column(name = "friend_state")
+	private int friendState; // 친구 상태 (0) 친구아님 (1) 친구 (2) 차단 
 }

@@ -1,8 +1,5 @@
 package com.imfreepass.discord.entity;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-
 import com.imfreepass.discord.user.entity.User;
 
 import jakarta.persistence.Column;
@@ -23,22 +20,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="chat_reply")
-public class Chat_reply {
+@Table(name="server_user")
+public class ServerUser {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "chat_reply_id")
-	private Long chatReplyId;
+	@Column(name = "chat_room_user_id")
+	private Long chatRoomUserId;
 	@ManyToOne
-	@JoinColumn(name = "chat_id", referencedColumnName = "chat_id")
-	private Chat chatId;
+	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
+	private User userId;
 	@ManyToOne
-	@JoinColumn(name = "send_user_id", referencedColumnName = "user_id")
-	private User sendUserId; // 보낸사람 
-	private String content; // 내용 
-	private LocalDate date; // 날짜 
-	private LocalTime time; // 시간 
-	@Column(name = "chat_state")
-	private int chatState; // 채팅 고정 여부 
+	@JoinColumn(name = "server_id", referencedColumnName = "server_id")
+	private Server serverId;
+	
 }

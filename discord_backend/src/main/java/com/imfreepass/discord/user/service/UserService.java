@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import com.imfreepass.discord.user.api.request.CreateUser;
 import com.imfreepass.discord.user.entity.State;
 import com.imfreepass.discord.user.entity.User;
-import com.imfreepass.discord.user.entity.User_Img;
+import com.imfreepass.discord.user.entity.UserImg;
 import com.imfreepass.discord.user.repository.UserRepository;
 import com.imfreepass.discord.user.repository.StateRepository;
 import com.imfreepass.discord.user.repository.UserImgRepository;
@@ -73,12 +73,12 @@ public class UserService {
 	 * @param save
 	 * @return
 	 */
-	public User_Img insertRandom(User save) {
+	public UserImg insertRandom(User save) {
 		Random random = new Random();
 		int randomNum = random.nextInt(5)+1;
 		String original = randomNum + ".jpg";
 		String path = "src/main/resources/static/img/default_profile/" + original;
-		User_Img img = User_Img.builder()
+		UserImg img = UserImg.builder()
 				.userId(save)
 				.original(original)
 				.path(path)
@@ -175,5 +175,23 @@ public class UserService {
 	 */
 	public Optional<User> findByUserId(Long userId) {
 		return userRepository.findById(userId);
+	}
+	
+	/**
+	 * userHash 검색 
+	 * @param userHash
+	 * @return
+	 */
+	public Optional<User> findByUserHash(String userHash){
+		return userRepository.findByUserHash(userHash);
+	}
+	
+	/**
+	 * 닉네임 검색 
+	 * @param nickname
+	 * @return
+	 */
+	public Optional<User> findByNickname(String nickname){
+		return userRepository.findByNickname(nickname);
 	}
 }

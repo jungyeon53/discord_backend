@@ -1,5 +1,10 @@
 package com.imfreepass.discord.entity;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+import com.imfreepass.discord.user.entity.User;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,19 +23,22 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="chat_attach")
-public class Chat_Attach {
+@Table(name="chat_reply")
+public class ChatReply {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "chat_img_id")
-	private Long chatImgId;
+	@Column(name = "chat_reply_id")
+	private Long chatReplyId;
 	@ManyToOne
 	@JoinColumn(name = "chat_id", referencedColumnName = "chat_id")
 	private Chat chatId;
-	@Column(length = 50)
-	private String original;
-	@Column(length = 50)
-	private String path;
-	
+	@ManyToOne
+	@JoinColumn(name = "send_user_id", referencedColumnName = "user_id")
+	private User sendUserId; // 보낸사람 
+	private String content; // 내용 
+	private LocalDate date; // 날짜 
+	private LocalTime time; // 시간 
+	@Column(name = "chat_state")
+	private int chatState; // 채팅 고정 여부 
 }

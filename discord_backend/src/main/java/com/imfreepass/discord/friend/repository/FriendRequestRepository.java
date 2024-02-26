@@ -10,16 +10,15 @@ import org.springframework.stereotype.Repository;
 
 import com.imfreepass.discord.friend.api.request.AddFriend;
 import com.imfreepass.discord.friend.entity.Friend;
-import com.imfreepass.discord.friend.entity.Friend_Request;
+import com.imfreepass.discord.friend.entity.FriendRequest;
 import com.imfreepass.discord.user.entity.User;
 
 @Repository
-public interface FriendRequestRepository extends JpaRepository<Friend_Request, Long>{
+public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long>{
 
-	List<Friend_Request> findByUserId(User userId);
+	List<FriendRequest> findByUserId(User userId);
 	long countByUserId(User userId);
-	
-	@Query("SELECT u FROM Friend_Request u WHERE u.userId = :userId AND u.sendUserId = :sendUserId")
-	Optional<Friend_Request> findByUserIdAndSendUserId(@Param("userId") User userId, @Param("sendUserId") User sendUserId);
+	Optional<FriendRequest> findByUserIdAndSendUserId(User userId, User sendUserId);
+
 
 }

@@ -32,7 +32,7 @@ public class Chat {
 	private Long chatId;
 	@ManyToOne
 	@JoinColumn(name = "chat_room_id" , referencedColumnName = "chat_room_id")
-	private Chat_Room chatRoomId;
+	private ChatRoom chatRoomId;
 	@ManyToOne
 	@JoinColumn(name = "from_user_id", referencedColumnName = "user_id")
 	private User fromUserId;

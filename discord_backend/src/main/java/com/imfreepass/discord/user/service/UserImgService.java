@@ -21,7 +21,7 @@ import com.imfreepass.discord.user.api.request.AddAndRemoveProfile;
 import com.imfreepass.discord.user.api.response.ViewUser;
 import com.imfreepass.discord.user.api.response.ViewUserImg;
 import com.imfreepass.discord.user.entity.User;
-import com.imfreepass.discord.user.entity.User_Img;
+import com.imfreepass.discord.user.entity.UserImg;
 import com.imfreepass.discord.user.repository.UserRepository;
 import com.imfreepass.discord.user.repository.UserImgRepository;
 
@@ -33,7 +33,7 @@ import lombok.extern.log4j.Log4j2;
 @Service
 @RequiredArgsConstructor
 @Log4j2
-public class User_ImgService {
+public class UserImgService {
 
 	private final UserRepository userRepository;
 	private final UserImgRepository imgRepository;
@@ -60,7 +60,7 @@ public class User_ImgService {
 				Long userId = user_id.getUserId();
 				User user = userRepository.findById(userId)
 						.orElseThrow(() -> new IllegalArgumentException("ID에 해당하는 사용자를 찾을 수 없습니다: " + user_id));
-				User_Img addProfile = User_Img.builder().userId(user).original(original).path(relativePath).build();
+				UserImg addProfile = UserImg.builder().userId(user).original(original).path(relativePath).build();
 				imgRepository.save(addProfile);
 				return relativePath;
 			} catch (IOException e) {
@@ -103,7 +103,7 @@ public class User_ImgService {
 	 * @param userId
 	 * @return
 	 */
-	public Optional<User_Img> findUserImg(User userId) {
+	public Optional<UserImg> findUserImg(User userId) {
 		return imgRepository.findByUserId(userId);
 	}
 

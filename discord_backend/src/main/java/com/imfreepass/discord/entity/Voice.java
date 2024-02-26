@@ -29,7 +29,7 @@ public class Voice {
 	private Long voiceId;
 	@ManyToOne
 	@JoinColumn(name = "voice_room_id", referencedColumnName = "voice_room_id")
-	private Voice_Room voiceRoomId;
+	private VoiceRoom voiceRoomId;
 	@ManyToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
 	private User userId;

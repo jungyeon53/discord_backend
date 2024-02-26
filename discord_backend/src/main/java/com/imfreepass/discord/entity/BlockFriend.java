@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name="block_friend")
-public class Block_Friend {
+public class BlockFriend {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
