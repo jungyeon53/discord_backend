@@ -24,15 +24,10 @@ import lombok.NoArgsConstructor;
 public class Alarm {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "alarm_id")
+	@Column(name = "alarmId")
 	private Long alarmId;
-	@ManyToOne
-	@JoinColumn(name = "chat_id", referencedColumnName = "chat_id")
-	private Chat chatId; // 채팅 pk 
-	@ManyToOne
-	@JoinColumn(name="user_id", referencedColumnName = "user_id")
-	private User userId; // 받은 사람 
+	private Long chatId; // 채팅 pk 
+	private Long userId; // 받은 사람 
 	@Column(name = "chat_state")
 	private int chatState; // 채팅 확인 여부 dd 
 }

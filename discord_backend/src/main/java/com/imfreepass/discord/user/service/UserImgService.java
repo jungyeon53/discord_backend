@@ -8,18 +8,13 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
-import javax.management.RuntimeErrorException;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.imfreepass.discord.user.api.request.AddAndRemoveProfile;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.imfreepass.discord.user.api.request.AddAndRemoveProfile;
-import com.imfreepass.discord.user.api.response.ViewUser;
-import com.imfreepass.discord.user.api.response.ViewUserImg;
 import com.imfreepass.discord.user.entity.User;
 import com.imfreepass.discord.user.entity.UserImg;
 import com.imfreepass.discord.user.repository.UserRepository;
@@ -27,40 +22,58 @@ import com.imfreepass.discord.user.repository.UserImgRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
-import lombok.extern.log4j.Log4j2;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
 public class UserImgService {
+
+	private static final String DEFAULT_PROFILE_PATH = "src/main/resources/static/img/default_profile/";
+	private static final String USER_RELATIVE_PATH = "img/user_profile/";
+	private static final String USER_ABSOLUTE_PATH = "src/main/resources/static/";
 
 	private final UserRepository userRepository;
 	private final UserImgRepository imgRepository;
 
 	/**
+	 * 랜덤 기본 이미지
+	 * @param user
+	 * @return
+	 */
+	public UserImg insertRandom(Long userId) {
+		Random random = new Random();
+		int randomNum = random.nextInt(5)+1;
+		String original = randomNum + ".jpg";
+		String path = DEFAULT_PROFILE_PATH + original;
+		UserImg img = UserImg.builder()
+				.userId(userId)
+				.original(original)
+				.path(path)
+				.build();
+		return imgRepository.save(img);
+	}
+
+	/**
 	 * 이미지 추가
 	 * @param files
-	 * @param user_id
+	 * @param userId
 	 */
-	public void addProfile(List<MultipartFile> files, User user_id) {
+	public void addProfile(List<MultipartFile> files, Long userId) {
 		List<String> profile = files.stream().map(file -> {
 			
 			String original = file.getOriginalFilename();
 			// 상대경로
-			String relativePath = "img/user_profile/" + user_id.getUserId() + "/" + original;
+			String relativePath = USER_RELATIVE_PATH + userId + "/" + original;
 			// 절대경로
-			String absolutePath = "src/main/resources/static/" + relativePath;
+			String absolutePath = USER_ABSOLUTE_PATH + relativePath;
 			try {
 				Path directoryPath = Paths.get("src", "main", "resources", "static", "img", "user_profile",
-						String.valueOf(user_id.getUserId()));
+						String.valueOf(userId));
 				Files.createDirectories(directoryPath);
 				Path filePath = Paths.get(absolutePath);
 				Files.write(filePath, file.getBytes());
-				Long userId = user_id.getUserId();
 				User user = userRepository.findById(userId)
-						.orElseThrow(() -> new IllegalArgumentException("ID에 해당하는 사용자를 찾을 수 없습니다: " + user_id));
-				UserImg addProfile = UserImg.builder().userId(user).original(original).path(relativePath).build();
+						.orElseThrow(() -> new IllegalArgumentException("ID에 해당하는 사용자를 찾을 수 없습니다: " + userId));
+				UserImg addProfile = UserImg.builder().userId(user.getUserId()).original(original).path(relativePath).build();
 				imgRepository.save(addProfile);
 				return relativePath;
 			} catch (IOException e) {
@@ -76,8 +89,8 @@ public class UserImgService {
 	 * @param user_id
 	 */
 	@Transactional
-	public void imgRemove(Long user_img_id, User user_id) {
-		String relativePath = "src/main/resources/static/img/user_profile/" + user_id.getUserId();
+	public void imgRemove(Long user_img_id, Long user_id) {
+		String relativePath = "src/main/resources/static/img/user_profile/" + user_id;
 		Path absolutePath = Paths.get(relativePath);
 		try {
 			// 디렉토리 체크
@@ -103,8 +116,37 @@ public class UserImgService {
 	 * @param userId
 	 * @return
 	 */
-	public Optional<UserImg> findUserImg(User userId) {
+	public Optional<UserImg> findUserImg(Long userId) {
 		return imgRepository.findByUserId(userId);
 	}
 
+	/**
+	 * 이미지 등록
+	 * @param img
+	 * @param userId
+	 * @param files
+	 */
+	@Transactional
+	public void registerImg(UserImg img, Long userId, List<MultipartFile> files) {
+		File directory = new File(USER_ABSOLUTE_PATH + USER_RELATIVE_PATH + userId);
+		// 디렉토리 안에 파일이 있는지 확인
+		File[] fileDirectory = directory.listFiles();
+		boolean isFileDirectoryNull = (fileDirectory == null || fileDirectory.length == 0);
+		if (isFileDirectoryNull) {
+			System.out.println("디렉토리에 파일이 없습니다.");
+		} else {
+			System.out.println("디렉토리에 파일이 있습니다.");
+			Long userImgId = img.getUserImgId();
+			imgRemove(userImgId, userId);
+		}
+		imgDbRemove(img.getUserImgId());
+		addProfile(files, userId);
+	}
+
+	@Transactional
+	public void defalutProfile(AddAndRemoveProfile profile) {
+		imgDbRemove(profile.getUserImgId());
+		imgRemove(profile.getUserImgId(), profile.getUserId());
+		insertRandom(profile.getUserId());
+	}
 }

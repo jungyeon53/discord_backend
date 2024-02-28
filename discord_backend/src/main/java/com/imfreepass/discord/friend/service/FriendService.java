@@ -2,23 +2,20 @@ package com.imfreepass.discord.friend.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.springframework.http.ResponseEntity;
+import com.imfreepass.discord.exception.DuplicateException;
+import com.imfreepass.discord.user.exception.NoSuchException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.imfreepass.discord.friend.api.request.AddFriend;
 import com.imfreepass.discord.friend.api.request.SendFriendRequest;
-import com.imfreepass.discord.friend.api.response.ViewFriend;
-import com.imfreepass.discord.friend.api.response.ViewFriendResponse;
 import com.imfreepass.discord.friend.entity.Friend;
 import com.imfreepass.discord.friend.entity.FriendRequest;
 import com.imfreepass.discord.friend.repository.FriendRepository;
 import com.imfreepass.discord.friend.repository.FriendRequestRepository;
 import com.imfreepass.discord.user.entity.User;
 import com.imfreepass.discord.user.repository.UserRepository;
-import com.imfreepass.discord.user.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -27,127 +24,129 @@ import lombok.extern.log4j.Log4j2;
 @RequiredArgsConstructor
 @Log4j2
 public class FriendService {
-	
+
 	private final FriendRequestRepository friendRequestRepository;
 	private final UserRepository userRepository;
 	private final FriendRepository friendRepository;
-	
+
 	/**
-	 * 친구신청
-	 * @param req
+	 * 친구 요청
+	 * @param request
 	 * @return
 	 */
-	public FriendRequest sendFriendRequest(SendFriendRequest req) {
-		// 받은 사람 
-		Optional<User> userId =  userRepository.findById(req.getUserId().getUserId());
-		// 보낸 사람 > 나 
-		Optional<User> sendId = userRepository.findById(req.getSendUserId().getUserId());
-		User user = userId.orElseThrow(() -> new RuntimeException("친구신청 받은 유저를 찾을 수 없습니다")); 
-	    User sendUser = sendId.orElseThrow(() -> new RuntimeException("친구신청 보낸 유저를 찾을 수 없습니다"));
-	    // 내가 보내려는 친구한테 친구 요청을 받았는지 체크 && 같은 친구한테 보내는지 체크 
-	    List<FriendRequest> me = friendRequestRepository.findByUserId(sendUser);
-	    Optional<FriendRequest> userIs = friendRequestRepository.findByUserIdAndSendUserId(user, sendUser);
-	    if (me.isEmpty() && userIs.isEmpty()) {
-	        FriendRequest friend = FriendRequest.builder()
-	                .userId(user)
-	                .sendUserId(sendUser)
-	                .friendState(0)
-	                .build();
-	        friendRequestRepository.save(friend);
-	        return friend;
-	    } else if (!userIs.isEmpty()) {
-	        throw new RuntimeException("이미 친구요청을 보냈습니다");
-	    } else {
-	        Friend addFriend = Friend.builder()
-	                .userId(user)
-	                .sendUserId(sendUser)
-	                .friendState(1)
-	                .build();
-	        friendRepository.save(addFriend);
-	        for (FriendRequest request : me) {
-	            friendRequestRepository.deleteById(request.getFriendRequestId());
-	        }
-	        return null;
-	    }
+	public void sendFriendRequest(SendFriendRequest request) {
+//		User fromUserId =  userRepository.findById(request.getFromUserId()).orElseThrow(() -> new NoSuchException("받은 유저를 찾을 수 없습니다."));
+//		User sendUserId = userRepository.findById(request.getSendUserId()).orElseThrow(() -> new NoSuchException("보낸 유저를 찾을 수 없습니다."));
+		friendRequestDuplicate(request.getFromUserId(), request.getSendUserId());
+		processFriendRequest(request);
 	}
-	
+
 	/**
-	 * 친구 요청 목록 보기 
+	 * 친구 요청 중복 체크
+	 * @param fromUserId
+	 * @param sendUserId
+	 */
+	private void friendRequestDuplicate(Long fromUserId, Long sendUserId){
+		boolean isValidateDuplicateRequest = friendRequestRepository.findByFromUserIdAndSendUserId(fromUserId, sendUserId).isPresent();
+		if(isValidateDuplicateRequest) {
+			throw new DuplicateException("이미 친구신청이 완료된 내역입니다.");
+		}
+	}
+
+	/**
+	 *	요청여부 체크
+	 * @param request
+	 */
+	@Transactional
+	public void processFriendRequest(SendFriendRequest request){
+		boolean isFriendRequest = friendRequestRepository.existsByFromUserId(request.getSendUserId());
+		if(isFriendRequest){
+			friendRepository.save(Friend.FriendInsert(request));
+			FriendRequest friendRequest = friendRequestRepository.findByFromUserIdAndSendUserId(request.getSendUserId(),request.getFromUserId()).orElseThrow();
+			friendRequestRepository.deleteById(friendRequest.getFriendRequestId());
+		} else {
+			friendRequestRepository.save(FriendRequest.FriendRequestInsert(request));
+		}
+	}
+
+
+	/**
+	 * 친구 요청 목록 보기
 	 * @param userId
 	 * @return
 	 */
-	public List<FriendRequest> getFriendRequests(User userId){
-		return friendRequestRepository.findByUserId(userId);
-	}
-	
+//	public List<FriendRequest> getFriendRequests(Long userId){
+//		return friendRequestRepository.findByUserId(userId);
+//	}
+
 	/**
-	 * 친구 요청 수락  
+	 * 친구 요청 수락
 	 * @param friend
 	 * @return
 	 */
 	public Friend insert(AddFriend friend) {
-		
+
 		Friend addFriend = Friend.builder()
-				.userId(friend.getUserId())
+				.fromUserId(friend.getUserId())
 				.sendUserId(friend.getSendUserId())
 				.friendState(1)
 				.build();
 		return friendRepository.save(addFriend);
 	}
-	
+
 	/**
-	 * 친구 요청 테이블에서 삭제 
+	 * 친구 요청 테이블에서 삭제
 	 * @param friendRequestId
 	 */
 	public void remove(Long friendRequestId) {
 		friendRequestRepository.deleteById(friendRequestId);
 	}
-	
+
 	/**
-	 * 받은 친구 요청 카운트 
+	 * 받은 친구 요청 카운트
 	 * @param userId
 	 * @return
 	 */
-	public long getCountByUserId(User userId) {
-		return friendRequestRepository.countByUserId(userId);
-	}
-	
+//	public long getCountByUserId(User userId) {
+//		return friendRequestRepository.countByUserId(userId);
+//	}
+
 	/**
-	 * 친구 삭제 
+	 * 친구 삭제
 	 * @param friendId
 	 */
 	public void removeFriend(Long friendId) {
 		friendRepository.deleteById(friendId);
 	}
-	
+
 	/**
-	 * 친구 목록 중 받은 친구 카운트 
+	 * 친구 목록 중 받은 친구 카운트
 	 * @param userId
 	 */
-	public long countByUserId(User userId) {
-		return friendRepository.countByUserId(userId);
-	}
-	
+//	public long countByUserId(User userId) {
+//		return friendRepository.countByUserId(userId);
+//	}
+
 	/**
-	 * 친구 목록 중 친구 카운트 
+	 * 친구 목록 중 친구 카운트
 	 * @param sendUserId
 	 */
 	public long countBySendUserId(User sendUserId) {
 		return friendRepository.countBySendUserId(sendUserId);
 	}
-	
+
 	/**
-	 * 친구 목록 
+	 * 친구 목록
 	 * @param userId
 	 * @param sendUserId
 	 * @return
-	 */	
-	public List<User> viewUser(User userId, User sendUserId){
-		 List<Friend> friends = friendRepository.findByUserIdOrSendUserId(userId,sendUserId);
-		    return friends.stream()
-		            .flatMap(friend -> Stream.of(friend.getUserId(), friend.getSendUserId()))
-		            .filter(user -> !user.getUserId().equals(userId.getUserId()))
-		            .distinct()
-		            .collect(Collectors.toList());
-	}
+	 */
+//	public List<User> viewUser(Long userId, Long sendUserId){
+//		 List<Friend> friends = friendRepository.findByUserIdOrSendUserId(userId,sendUserId);
+//		    return friends.stream()
+//		            .flatMap(friend -> Stream.of(friend.getUserId(), friend.getSendUserId()))
+//		            .filter(user -> !user.getUserId().equals(userId.getUserId()))
+//		            .distinct()
+//		            .collect(Collectors.toList());
+//	}
 }

@@ -5,7 +5,7 @@ import java.util.Date;
 
 import org.springframework.stereotype.Service;
 
-import com.imfreepass.discord.user.api.response.LoginUser;
+import com.imfreepass.discord.user.api.request.LoginUser;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Header;

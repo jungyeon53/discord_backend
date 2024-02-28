@@ -19,7 +19,7 @@ public interface UserImgRepository extends JpaRepository<UserImg, Long>{
 	
 	void deleteByUserImgId(Long user_img_id);
 	
-	Optional<UserImg> findByUserId(User userId);
+	Optional<UserImg> findByUserId(Long userId);
 
 	
 

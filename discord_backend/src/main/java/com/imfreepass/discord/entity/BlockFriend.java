@@ -20,20 +20,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="block_friend")
+@Table(name="blockFriend")
 public class BlockFriend {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "block_id")
+	@Column(name = "blockId")
 	private Long blockId;
 	
-	@ManyToOne
-	@JoinColumn(name = "send_user_id", referencedColumnName = "user_id")
-	private User sendUserId; // 보낸 친구 
-	@ManyToOne
-	@JoinColumn(name = "from_user_id", referencedColumnName = "user_id")
-	private User fromUserId; // 받은 친구 
-	@Column(name = "friend_state")
+	
+	private Long sendUserId; // 보낸 친구 
+	
+	private Long fromUserId; // 받은 친구 
+	@Column(name = "friendState")
 	private int friendState; // 친구 요청 상태 
 }

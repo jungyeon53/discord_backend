@@ -21,11 +21,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateUser {
-	
+
+	private Long userId;
 	private String email;
 	private String password;
-	private String nickname; // 별명 
-	private String userHash; // 사용자명 
+	private String nickname;
+	private String userHash;
 	private String birth;
 	private State stateId;
 	private int preState;

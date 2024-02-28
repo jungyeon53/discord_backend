@@ -25,12 +25,10 @@ public class State {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "state_id")
-	private Long stateId;
-	@Schema(hidden = true)
-	@Column(length = 50, name = "state_name")
+	@Column(name = "stateId")
+	private int stateId;
+	@Column(length = 50, name = "stateName")
 	private String stateName;
-	@Schema(hidden = true)
-	@Column(length = 50, name = "state_text")
+	@Column(length = 50, name = "stateText")
 	private String stateText;
 }

@@ -22,13 +22,12 @@ import lombok.NoArgsConstructor;
 public class VoiceRoom {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "voice_room_id")
+	@Column(name = "voiceRoomId")
 	private Long voiceRoomId;
-	@ManyToOne
-	@JoinColumn(name = "server_id", referencedColumnName = "server_id")
-	private Server serverId;
-	@Column(length = 50, name = "voice_title")
+	
+	private Long serverId;
+	@Column(length = 50, name = "voiceTitle")
 	private String voiceTitle;
-	@Column(name = "room_state")
+	@Column(name = "roomState")
 	private int roomState;
 }

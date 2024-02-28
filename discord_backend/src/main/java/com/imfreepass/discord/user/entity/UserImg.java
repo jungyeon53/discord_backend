@@ -25,11 +25,10 @@ public class UserImg {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_img_id")
+	@Column(name = "userImgId")
 	private Long userImgId; // img PK
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
-	private User userId;
+	
+	private Long userId;
 	@Column(length = 50)
 	private String original; // 원본 이름 
 	@Column(length = 1000)

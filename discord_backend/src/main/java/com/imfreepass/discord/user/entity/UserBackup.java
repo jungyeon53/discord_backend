@@ -23,7 +23,7 @@ public class UserBackup {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "backup_id")
+	@Column(name = "backupId")
 	private Long backupId;
 	@Column(length = 50)
 	private String email;
@@ -32,10 +32,10 @@ public class UserBackup {
 	@Column(length = 50)
 	private String nickname;
 	@Column(length = 50)
-	private String user_hash; // 사용자명 
+	private String userHash; // 사용자명 
 	@Column(length = 50)
 	private String birth;
-	private ZonedDateTime join_date; // 가입날짜 
-	@Column(name = "cancel_date")
+	private ZonedDateTime joinDate; // 가입날짜 
+	@Column(name = "cancelDate")
 	private ZonedDateTime cancelDate; // 탈퇴 날짜 
 }

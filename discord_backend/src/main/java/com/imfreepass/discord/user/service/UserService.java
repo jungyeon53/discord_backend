@@ -1,12 +1,13 @@
 package com.imfreepass.discord.user.service;
 
-import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Random;
 
-import org.springframework.dao.DataIntegrityViolationException;
+import com.imfreepass.discord.user.api.response.ViewUser;
+import com.imfreepass.discord.user.exception.DuplicateEmailException;
+import com.imfreepass.discord.user.exception.DuplicateNicknameException;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -30,61 +31,44 @@ public class UserService {
 	private final UserImgRepository imgRepository;
 	private final StateRepository stateRepository;
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
-	
+	private final UserImgService imgService;
+
 	/**
-	 * 중복검사 후 회원가입
-	 * @param req
+	 * 회원가입
+	 * @param request
 	 * @return
 	 */
-	public User insert(CreateUser req) {
-	    // 중복된 이메일 주소 검사
-	    userRepository.findByEmail(req.getEmail())
-	            .ifPresent(email -> {
-	                throw new DataIntegrityViolationException("중복된 이메일 주소입니다.");
-	            });
-	    // 유저 해시 중복 검사
-	    userRepository.findByUserHash(req.getUserHash())
-	            .ifPresent(user_hash -> {
-	                throw new RuntimeException("중복된 유저해시입니다.");
-	            });
-	    // 상태 정보 가져오기
-	    State userState = stateRepository.findById(4L)
-	            .orElseThrow(() -> new IllegalStateException("상태를 찾을 수없습니다."));
-	    // 회원가입
-	    User user = User.builder()
-	            .email(req.getEmail())
-	            .password(bCryptPasswordEncoder.encode(req.getPassword()))
-	            .nickname(req.getNickname())
-	            .userHash(req.getUserHash())
-	            .birth(req.getBirth())
-	            .joinDate(ZonedDateTime.now())
-	            .stateId(userState)
-	            .preState(1)
-	            .build();
-	    User savedUser = userRepository.save(user);
-	    insertRandom(savedUser);
-
-	    return savedUser;
+	public void insert(CreateUser request) {
+		validateEmail(request);
+		validateUserHash(request);
+		User user = User.registerUser(request, bCryptPasswordEncoder);
+		User savedUser = userRepository.save(user);
+		imgService.insertRandom(savedUser.getUserId());
 	}
 
-	
+
 	/**
-	 * 랜덤 기본 이미지
-	 * @param save
-	 * @return
+	 * 이메일 중복검사
+	 * @param request
 	 */
-	public UserImg insertRandom(User save) {
-		Random random = new Random();
-		int randomNum = random.nextInt(5)+1;
-		String original = randomNum + ".jpg";
-		String path = "src/main/resources/static/img/default_profile/" + original;
-		UserImg img = UserImg.builder()
-				.userId(save)
-				.original(original)
-				.path(path)
-				.build();
-		return imgRepository.save(img);
+	public void validateEmail(CreateUser request) {
+		boolean isValidateEmail = userRepository.findByEmail(request.getEmail()).isPresent();
+		if(isValidateEmail) {
+			throw new DuplicateEmailException("이미 가입된 이메일입니다.");
+		}
 	}
+
+	/**
+	 * 닉네임 중복검사
+	 * @param request
+	 */
+	public void validateUserHash(CreateUser request) {
+		boolean isValidateNickname = userRepository.findByUserHash(request.getNickname()).isPresent();
+		if(isValidateNickname) {
+			throw  new DuplicateNicknameException("이미 존재하는 닉네임입니다.");
+		}
+	}
+
 	
 	/**
 	 * 유저 전체 조회 
@@ -100,25 +84,12 @@ public class UserService {
 	 * @param refreshToken
 	 * @return
 	 */
-	public User saveRefreshToken(String email, String refreshToken) {
+	public void saveRefreshToken(String email, String refreshToken) {
 		Optional<User> user = userRepository.findByEmail(email);
-		if(user.isPresent()) {
-			User member = user.get();
-			member.setRefreshToken(refreshToken);
-			return userRepository.save(member);
-		} else {
-			throw new NoSuchElementException("유저가 없습니다");
-		}
+		User member = user.get();
+		member.setRefreshToken(refreshToken);
+		userRepository.save(member);
 	}
-	
-	 /**
-	  * 로그아웃
-	  * @param email
-	  * @return
-	  */
-    public int removeRefreshToken(String email) {
-        return userRepository.clearTokenByEmail(email);
-    }
     
     /**
      * 비밀번호 변경 
@@ -149,24 +120,40 @@ public class UserService {
 	public int modifyNickname(Long user_id, String nickname) {
 		return userRepository.updateNickname(user_id, nickname);
 	}
-	
+
 	/**
-	 * 상태 변경 
-	 * @param stateId
-	 * @param userId
-	 * @return
-	 */
-	public int modifyState(State stateId, Long userId) {
-		return userRepository.updateState(userId, stateId);
-	}
-	
-	/**
-	 * 이전 상태 변경 
+	 * 상태변경
 	 * @param userId
 	 * @param preState
+	 * @return
 	 */
-	public void modifyPreState(Long userId, int preState) {
-		userRepository.updatePreState(userId, preState);
+	public int  modifyState(Long userId, int preState) {
+		int stateId = validateState(preState);
+		return userRepository.updateState(userId, stateId);
+	}
+
+	/**
+	 * preState 체크 후 state 상태 변경
+	 * @param preState
+	 * @return
+	 */
+	public int validateState(int preState){
+		State stateId = new State();
+		switch (preState) {
+			case 1:
+				stateId.setStateId(1);
+				break;
+			case 2:
+				stateId.setStateId(2);
+				break;
+			case 3:
+				stateId.setStateId(3);
+				break;
+			default:
+				stateId.setStateId(1);
+				break;
+		}
+		return preState;
 	}
 	
 	/** userId로 조회 
@@ -194,4 +181,27 @@ public class UserService {
 	public Optional<User> findByNickname(String nickname){
 		return userRepository.findByNickname(nickname);
 	}
+
+	/**
+	 * 로그아웃
+	 * @param userId
+	 * @param preState
+	 * @param email
+	 */
+	@Transactional
+	public void logout(Long userId, int preState, String email) {
+		userRepository.updatePreState(userId, preState);
+		modifyState(userId, 4);
+		userRepository.clearTokenByEmail(email);
+	}
+
+	/**
+	 * 유저 검색 반환 값
+	 * @param user
+	 * @return
+	 */
+	public ViewUser convertToViewUser(User user) {
+		return new ViewUser(user.getUserId(), user.getStateId(), user.getEmail(), user.getNickname(), user.getUserHash());
+	}
+
 }

@@ -8,6 +8,6 @@ import lombok.Getter;
 public class StateChange {
 	
 	private Long userId;
-	private State stateId;
+	private int stateId;
 	
 }

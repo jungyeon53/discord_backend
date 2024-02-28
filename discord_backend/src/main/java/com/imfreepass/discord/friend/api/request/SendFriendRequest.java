@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class SendFriendRequest {
-	private Long friendRequestId; // 친구신청 pk 
-	private User userId; // 받은 친구 
-	private User sendUserId; // 보낸친구
+
+	private Long fromUserId; // 받은 친구
+	private Long sendUserId; // 보낸친구
 	@ApiModelProperty(hidden = true)
 	private int friendState; // 친구 상태 (0) 친구아님 (1) 친구 (2) 차단 
 }

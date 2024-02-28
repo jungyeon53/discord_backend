@@ -28,17 +28,15 @@ public class ChatReply {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "chat_reply_id")
+	@Column(name = "chatReplyId")
 	private Long chatReplyId;
-	@ManyToOne
-	@JoinColumn(name = "chat_id", referencedColumnName = "chat_id")
-	private Chat chatId;
-	@ManyToOne
-	@JoinColumn(name = "send_user_id", referencedColumnName = "user_id")
-	private User sendUserId; // 보낸사람 
+	
+	private Long chatId;
+	
+	private Long sendUserId; // 보낸사람 
 	private String content; // 내용 
 	private LocalDate date; // 날짜 
 	private LocalTime time; // 시간 
-	@Column(name = "chat_state")
+	@Column(name = "chatState")
 	private int chatState; // 채팅 고정 여부 
 }

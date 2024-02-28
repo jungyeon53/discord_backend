@@ -25,13 +25,11 @@ public class ServerUser {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "chat_room_user_id")
+	@Column(name = "chatRoomUserId")
 	private Long chatRoomUserId;
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
-	private User userId;
-	@ManyToOne
-	@JoinColumn(name = "server_id", referencedColumnName = "server_id")
-	private Server serverId;
+	
+	private Long userId;
+	
+	private Long serverId;
 	
 }

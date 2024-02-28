@@ -25,12 +25,10 @@ public class UserBadge {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_badge_id")
+	@Column(name = "userBadgeId")
 	private Long userBadgeId;
-	@ManyToOne
-	@JoinColumn(name = "user_id" , referencedColumnName = "user_id")
-	private User userId;
-	@ManyToOne
-	@JoinColumn(name = "badge_id", referencedColumnName = "badge_id")
-	private Badge badgeId;
+	
+	private Long userId;
+	
+	private Long badgeId;
 }

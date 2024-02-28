@@ -23,11 +23,10 @@ public class ChatAttach {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "chat_img_id")
+	@Column(name = "chatImgId")
 	private Long chatImgId;
-	@ManyToOne
-	@JoinColumn(name = "chat_id", referencedColumnName = "chat_id")
-	private Chat chatId;
+	
+	private Long chatId;
 	@Column(length = 50)
 	private String original;
 	@Column(length = 50)

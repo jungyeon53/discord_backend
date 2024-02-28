@@ -28,15 +28,12 @@ public class Chat {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "chat_id")
+	@Column(name = "chatId")
 	private Long chatId;
-	@ManyToOne
-	@JoinColumn(name = "chat_room_id" , referencedColumnName = "chat_room_id")
-	private ChatRoom chatRoomId;
-	@ManyToOne
-	@JoinColumn(name = "from_user_id", referencedColumnName = "user_id")
-	private User fromUserId;
-
+	
+	private Long chatRoomId;
+	
+	private Long fromUserId;
 	private String text;
 	private LocalDate date;
 	private LocalTime time;

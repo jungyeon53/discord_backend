@@ -16,9 +16,9 @@ import com.imfreepass.discord.user.entity.User;
 @Repository
 public interface FriendRequestRepository extends JpaRepository<FriendRequest, Long>{
 
-	List<FriendRequest> findByUserId(User userId);
-	long countByUserId(User userId);
-	Optional<FriendRequest> findByUserIdAndSendUserId(User userId, User sendUserId);
-
+//	List<FriendRequest> findByUserId(Long userId);
+//	long countByUserId(Long userId);
+	Optional<FriendRequest> findByFromUserIdAndSendUserId(Long fromUserId, Long sendUserId);
+	boolean existsByFromUserId(Long sendUserId);
 
 }

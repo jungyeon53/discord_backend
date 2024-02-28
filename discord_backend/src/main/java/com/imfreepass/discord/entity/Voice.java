@@ -25,14 +25,12 @@ public class Voice {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "voice_id")
+	@Column(name = "voiceId")
 	private Long voiceId;
-	@ManyToOne
-	@JoinColumn(name = "voice_room_id", referencedColumnName = "voice_room_id")
-	private VoiceRoom voiceRoomId;
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
-	private User userId;
+	
+	private Long voiceRoomId;
+	
+	private Long userId;
 	@Column(length = 50)
 	private String title;
 }

@@ -4,6 +4,8 @@ import java.time.ZonedDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.imfreepass.discord.user.api.request.CreateUser;
+import com.imfreepass.discord.user.api.response.ViewUser;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,47 +16,60 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Getter
 @Setter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name="user")
 public class User {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "user_id")
+	@Column(name = "userId")
 	private Long userId;
-	@ManyToOne
-	@JoinColumn(name = "state_id" , referencedColumnName = "state_id")
-	private State stateId; // 상태pk
-	@Column(name = "pre_state")
-	@Schema(hidden = true)
+	
+	private int stateId; // 상태pk
+	@Column(name = "preState")
 	private int preState; // 이전 상태 
 	@Column(length = 50)
 	private String email;
 	@Column(length = 255)
-	@JsonIgnore
 	private String password;
 	@Column(length = 50)
 	private String nickname;
-	@Column(length = 50, name = "user_hash")
+	@Column(length = 50, name = "userHash")
 	private String userHash; // 사용자명 
 	@Column(length = 50)
-	@Schema(hidden = true)
 	private String birth;
-	@Column(name = "join_date")
-	@Schema(hidden = true)
+	@Column(name = "joinDate")
 	private ZonedDateTime joinDate; // 가입날짜 
 	@Column(length = 500)
-	@JsonIgnore
-	private String refreshToken; // 리프레쉬 토큰 
+	private String refreshToken; // 리프레쉬 토큰
+
+
+	@Autowired
+	private static BCryptPasswordEncoder bCryptPasswordEncoder;
+	public void registerUser() {
+		this.password = bCryptPasswordEncoder.encode(this.password);
+	}
+	public static User registerUser(CreateUser user, BCryptPasswordEncoder bCryptPasswordEncoder){
+        return User.builder()
+                .email(user.getEmail())
+                .password(bCryptPasswordEncoder.encode(user.getPassword()))
+                .nickname(user.getNickname())
+                .userHash(user.getUserHash())
+                .birth(user.getBirth())
+                .joinDate(ZonedDateTime.now())
+                .stateId(4)
+                .preState(1)
+                .build();
+    }
+
+
 }

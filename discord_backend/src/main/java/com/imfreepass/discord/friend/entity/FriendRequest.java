@@ -1,5 +1,6 @@
 package com.imfreepass.discord.friend.entity;
 
+import com.imfreepass.discord.friend.api.request.SendFriendRequest;
 import com.imfreepass.discord.user.entity.User;
 
 import jakarta.persistence.Column;
@@ -25,14 +26,20 @@ public class FriendRequest {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "friend_request_id")
+	@Column(name = "friendRequestId")
 	private Long friendRequestId; // 친구신청 pk 
-	@ManyToOne
-	@JoinColumn(name = "user_id", referencedColumnName = "user_id")
-	private User userId; // 받은 친구 
-	@ManyToOne
-	@JoinColumn(name = "send_user_id", referencedColumnName = "user_id")
-	private User sendUserId; // 보낸친구
-	@Column(name = "friend_state")
+	
+	private Long fromUserId; // 받은 친구
+	
+	private Long sendUserId; // 보낸친구
+	@Column(name = "friendState")
 	private int friendState; // 친구 상태 (0) 친구아님 (1) 친구 (2) 차단 
+
+	public static FriendRequest FriendRequestInsert(SendFriendRequest request) {
+		return FriendRequest.builder()
+				.fromUserId(request.getFromUserId())
+				.sendUserId(request.getSendUserId())
+				.friendState(0)
+				.build();
+	}
 }

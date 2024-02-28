@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class AddFriend {
 	private Long friendRequestId;
-	private User userId;
-	private User sendUserId;
+	private Long userId;
+	private Long sendUserId;
 	private int friendState;
 }

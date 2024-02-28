@@ -12,7 +12,7 @@ import com.imfreepass.discord.user.entity.User;
 @Repository
 public interface FriendRepository extends JpaRepository<Friend, Long>{
 	
-	long countByUserId(User userId);
+//	long countByUserId(User userId);
 	long countBySendUserId(User sendUserId);
-	List<Friend> findByUserIdOrSendUserId(User userId, User sendUserId);
+//	List<Friend> findByUserIdOrSendUserId(Long fromUserId, Long sendUserId);
 }

@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class AddAndRemoveProfile {
-	
 	private Long userImgId;
-	private User userId;
+	private Long userId;
 }

@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.imfreepass.discord.user.api.response.LoginUser;
-import com.imfreepass.discord.user.entity.State;
 import com.imfreepass.discord.user.entity.User;
 
 import jakarta.transaction.Transactional;
@@ -37,7 +35,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Transactional
 	@Modifying
 	@Query("update User u set u.stateId = :stateId where u.userId = :userId")
-	int updateState(@Param("userId") Long userId, @Param("stateId") State stateId);
+	int updateState(@Param("userId") Long userId, @Param("stateId") int stateId);
 	
 	@Transactional
 	@Modifying
