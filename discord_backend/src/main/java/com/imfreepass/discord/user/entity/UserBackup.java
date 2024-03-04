@@ -32,10 +32,9 @@ public class UserBackup {
 	@Column(length = 50)
 	private String nickname;
 	@Column(length = 50)
-	private String userHash; // 사용자명 
-	@Column(length = 50)
+	private String userHash;
 	private String birth;
-	private ZonedDateTime joinDate; // 가입날짜 
+	private ZonedDateTime joinDate;
 	@Column(name = "cancelDate")
-	private ZonedDateTime cancelDate; // 탈퇴 날짜 
+	private ZonedDateTime cancelDate;
 }

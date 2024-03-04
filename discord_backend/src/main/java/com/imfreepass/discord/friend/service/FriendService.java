@@ -163,7 +163,7 @@ public class FriendService {
 	}
 
 	/**
-	 * 친구 목록 리스트
+	 * 친구 목록 리스트 (나 포함)
 	 *
 	 * @param fromUserId
 	 * @param sendUserId
@@ -181,6 +181,22 @@ public class FriendService {
 	}
 
 	/**
+	 * 친구 목록
+	 * @param fromUserId
+	 * @param sendUserId
+	 * @return
+	 */
+	public List<ViewDistinctFriend> getViewFriendsList(Long fromUserId, Long sendUserId) {
+		List<ViewFriend> viewFriends = getViewFriends(fromUserId, sendUserId);
+		return getViewFriends(fromUserId, sendUserId).stream()
+						.flatMap(friend -> Stream.of(friend.getFromUserId(), friend.getSendUserId()))
+						.filter(user -> !user.getUserId().equals(fromUserId) && !user.getUserId().equals(sendUserId))
+						.distinct()
+						.map(user -> new ViewDistinctFriend(user.getUserId(), user, user.getState().ordinal()))
+						.collect(Collectors.toList());
+	}
+
+	/**
 	 * 온라인 친구 목록
 	 * @param fromUserId
 	 * @param sendUserId
@@ -188,8 +204,7 @@ public class FriendService {
 	 */
 	public List<ViewDistinctFriend> getViewOnlineFriend(Long fromUserId, Long sendUserId) {
 		List<ViewFriend> viewFriends = getViewFriends(fromUserId, sendUserId);
-		return
-				getViewFriends(fromUserId, sendUserId).stream()
+		return getViewFriends(fromUserId, sendUserId).stream()
 						.flatMap(friend -> Stream.of(friend.getFromUserId(), friend.getSendUserId()))
 						.filter(user -> !user.getUserId().equals(fromUserId) && !user.getUserId().equals(sendUserId))
 						.distinct()

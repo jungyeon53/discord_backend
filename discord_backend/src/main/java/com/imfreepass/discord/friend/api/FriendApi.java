@@ -109,12 +109,10 @@ public class FriendApi {
 	 * @return
 	 */
 	@GetMapping("/list/{fromUserId}")
-	public ResponseEntity<List<ViewFriend>> viewFriend(@PathVariable(name = "fromUserId") Long fromUserId) {
+	public List<ViewDistinctFriend> viewFriend(@PathVariable(name = "fromUserId") Long fromUserId) {
 		Long sendUserId = fromUserId;
-		List<ViewFriend> viewFriends = friendService.getViewFriends(fromUserId, sendUserId);
-		return ResponseEntity.ok(viewFriends);
+		return friendService.getViewFriendsList(sendUserId, fromUserId);
 	}
-
 
 	/**
 	 * 온라인 친구 목록

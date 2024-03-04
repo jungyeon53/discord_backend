@@ -29,11 +29,11 @@ public class Friend {
 	@Column(name = "friendId")
 	private Long friendId;
 	
-	private Long fromUserId; // 받은 친구
+	private Long fromUserId;
 	
-	private Long sendUserId; // 보낸 친구
+	private Long sendUserId;
 	@Column(name = "friendState")
-	private int friendState; // 친구 상태 
+	private int friendState;
 
     public static Friend FriendInsert(SendFriendRequest request) {
 		return Friend.builder()
