@@ -27,13 +27,11 @@ public class FriendRequest {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "friendRequestId")
-	private Long friendRequestId; // 친구신청 pk 
-	
+	private Long friendRequestId; // 친구신청 pk
 	private Long fromUserId; // 받은 친구
-	
 	private Long sendUserId; // 보낸친구
 	@Column(name = "friendState")
-	private int friendState; // 친구 상태 (0) 친구아님 (1) 친구 (2) 차단 
+	private int friendState; // 친구 상태 (0) 친구아님 (1) 친구 (2) 차단
 
 	public static FriendRequest FriendRequestInsert(SendFriendRequest request) {
 		return FriendRequest.builder()

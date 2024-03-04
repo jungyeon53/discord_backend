@@ -34,13 +34,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	
 	@Transactional
 	@Modifying
-	@Query("update User u set u.stateId = :stateId where u.userId = :userId")
-	int updateState(@Param("userId") Long userId, @Param("stateId") int stateId);
+	@Query("update User u set u.state = :state where u.userId = :userId")
+	int updateState(@Param("userId") Long userId, @Param("state") User.State state);
 	
 	@Transactional
 	@Modifying
 	@Query("update User u set u.preState = :preState where u.userId = :userId")
-	void updatePreState(@Param("userId") Long userId, @Param("preState") int preState);
+	void updatePreState(@Param("userId") Long userId, @Param("preState") User.State preState);
 	
 	Optional<User> findByUserHash(String user_hash);
 	Optional<User> findByNickname(String nickname);

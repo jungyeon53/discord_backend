@@ -1,9 +1,6 @@
 package com.imfreepass.discord.user.api.response;
 
-import java.time.ZonedDateTime;
-
-import com.imfreepass.discord.user.entity.State;
-
+import com.imfreepass.discord.user.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,12 +15,18 @@ import lombok.Setter;
 public class ViewUser {
 
 	private Long userId;
-	private int stateId;
+	private User.State state;
 	private String email;
-//	private String password;
 	private String nickname;
-	private String user_hash;
-//	private String birth;
-//	private ZonedDateTime join_date;
-//	private String refreshToken;
+	private String userHash;
+
+	public static ViewUser from(User user) {
+		return ViewUser.builder()
+				.userId(user.getUserId())
+				.state(user.getState())
+				.email(user.getEmail())
+				.nickname(user.getNickname())
+				.userHash(user.getUserHash())
+				.build();
+	}
 }

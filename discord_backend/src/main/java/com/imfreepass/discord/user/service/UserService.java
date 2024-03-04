@@ -2,7 +2,6 @@ package com.imfreepass.discord.user.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 import com.imfreepass.discord.user.api.response.ViewUser;
 import com.imfreepass.discord.user.exception.DuplicateEmailException;
@@ -12,11 +11,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.imfreepass.discord.user.api.request.CreateUser;
-import com.imfreepass.discord.user.entity.State;
 import com.imfreepass.discord.user.entity.User;
-import com.imfreepass.discord.user.entity.UserImg;
 import com.imfreepass.discord.user.repository.UserRepository;
-import com.imfreepass.discord.user.repository.StateRepository;
 import com.imfreepass.discord.user.repository.UserImgRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +25,6 @@ public class UserService {
 	
 	private final UserRepository userRepository;
 	private final UserImgRepository imgRepository;
-	private final StateRepository stateRepository;
 	private final BCryptPasswordEncoder bCryptPasswordEncoder;
 	private final UserImgService imgService;
 
@@ -127,9 +122,10 @@ public class UserService {
 	 * @param preState
 	 * @return
 	 */
-	public int  modifyState(Long userId, int preState) {
-		int stateId = validateState(preState);
-		return userRepository.updateState(userId, stateId);
+	public int  modifyState(Long userId, User.State preState) {
+		User.State state = validateState(preState);
+		userRepository.updatePreState(userId, state);
+		return userRepository.updateState(userId, state);
 	}
 
 	/**
@@ -137,23 +133,26 @@ public class UserService {
 	 * @param preState
 	 * @return
 	 */
-	public int validateState(int preState){
-		State stateId = new State();
+	public User.State validateState(User.State preState) {
+		ViewUser user = new ViewUser();
 		switch (preState) {
-			case 1:
-				stateId.setStateId(1);
+			case ONLINE:
+				user.setState(User.State.ONLINE);
 				break;
-			case 2:
-				stateId.setStateId(2);
+			case DO_NOT_DISTURB:
+				user.setState(User.State.DO_NOT_DISTURB);
 				break;
-			case 3:
-				stateId.setStateId(3);
+			case INVISIBLE:
+				user.setState(User.State.INVISIBLE);
+				break;
+			case IDLE:
+				user.setState(User.State.ONLINE);
 				break;
 			default:
-				stateId.setStateId(1);
+				user.setState(User.State.IDLE);
 				break;
 		}
-		return preState;
+		return user.getState();
 	}
 	
 	/** userId로 조회 
@@ -162,6 +161,16 @@ public class UserService {
 	 */
 	public Optional<User> findByUserId(Long userId) {
 		return userRepository.findById(userId);
+	}
+
+	/**
+	 * ViewUser로 변환
+	 * @param userId
+	 * @return
+	 */
+	public ViewUser converterViewUser(Long userId){
+		User user = userRepository.findById(userId).orElseThrow();
+		return ViewUser.from(user);
 	}
 	
 	/**
@@ -184,15 +193,18 @@ public class UserService {
 
 	/**
 	 * 로그아웃
-	 * @param userId
-	 * @param preState
-	 * @param email
+	 * @param user
 	 */
 	@Transactional
-	public void logout(Long userId, int preState, String email) {
-		userRepository.updatePreState(userId, preState);
-		modifyState(userId, 4);
-		userRepository.clearTokenByEmail(email);
+	public void logout(Optional<User> user) {
+		User.State state = user.get().getState();
+		User.State preState = (state == User.State.ONLINE) ? User.State.IDLE :
+				(state == User.State.DO_NOT_DISTURB) ? User.State.DO_NOT_DISTURB :
+						(state == User.State.IDLE) ? User.State.IDLE :
+								User.State.INVISIBLE;
+		userRepository.updatePreState(user.get().getUserId(), preState);
+		userRepository.updateState(user.get().getUserId(), User.State.IDLE);
+		userRepository.clearTokenByEmail(user.get().getEmail());
 	}
 
 	/**
@@ -201,7 +213,7 @@ public class UserService {
 	 * @return
 	 */
 	public ViewUser convertToViewUser(User user) {
-		return new ViewUser(user.getUserId(), user.getStateId(), user.getEmail(), user.getNickname(), user.getUserHash());
+		return new ViewUser(user.getUserId(), user.getState(), user.getEmail(), user.getNickname(), user.getUserHash());
 	}
 
 }

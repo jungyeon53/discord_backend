@@ -1,10 +1,13 @@
 package com.imfreepass.discord.friend.api;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.imfreepass.discord.friend.api.response.ViewDistinctFriend;
 import com.imfreepass.discord.friend.service.FriendService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,13 +30,13 @@ import com.imfreepass.discord.friend.api.response.ViewFriendResponse;
 import com.imfreepass.discord.friend.entity.Friend;
 import com.imfreepass.discord.friend.entity.FriendRequest;
 import com.imfreepass.discord.user.api.response.ViewUser;
-import com.imfreepass.discord.user.entity.State;
-import com.imfreepass.discord.user.entity.User;
 import com.imfreepass.discord.user.service.UserService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import javax.swing.text.View;
 
 
 @RestController
@@ -43,91 +46,118 @@ import lombok.extern.log4j.Log4j2;
 public class FriendApi {
 
 	private final FriendService friendService;
+	private final UserService userService;
+
 
 	/**
 	 * 친구신청
+	 *
 	 * @param send
 	 * @return
 	 */
 	@PostMapping("/request")
 	public ResponseEntity<String> sendFriendRequest(@RequestBody SendFriendRequest send) {
-        friendService.sendFriendRequest(send);
-        return ResponseEntity.ok("친구신청이 완료되었습니다");
+		friendService.sendFriendRequest(send);
+		return ResponseEntity.ok("친구신청이 완료되었습니다");
 	}
 
 	/**
-	 * 친구 요청 목록 보기
-	 * @param userId
+	 * 받은 친구 요청 목록 보기
+	 *
+	 * @param fromUserId
 	 * @return
 	 */
-//	@GetMapping("/response/{userId}")
-//	public List<FriendRequest> getFriendRequests(@PathVariable(name = "userId") User userId){
-//		return friendService.getFriendRequests(userId);
-//	}
-//
-//	/**
-//	 * 받은 친구 목록 갯수
-//	 * @param userId
-//	 * @return
-//	 */
-//	@GetMapping("/count/{userId}")
-//	public long countFriendRequests(@PathVariable(name = "userId") User userId) {
-//		return friendService.getCountByUserId(userId);
-//	}
+	@GetMapping("/response/{fromUserId}")
+	public ResponseEntity<List<ViewFriendResponse>> getFriendRequests(@PathVariable(name = "fromUserId") Long fromUserId) {
+		List<FriendRequest> friendRequests = friendService.getFriendRequests(fromUserId);
+		List<ViewFriendResponse> friendResponse = friendRequests.stream()
+				.map(friendRequest -> {
+					ViewUser viewUser = userService.converterViewUser(friendRequest.getSendUserId());
+					return new ViewFriendResponse(friendRequest.getFromUserId(), friendRequest.getSendUserId(), viewUser, friendRequest.getFriendState());
+				})
+				.collect(Collectors.toList());
+		return ResponseEntity.ok(friendResponse);
+	}
+
+	/**
+	 * 받은 친구 목록 갯수
+	 *
+	 * @param fromUserId
+	 * @return
+	 */
+	@GetMapping("/count/{fromUserId}")
+	public long countFriendRequests(@PathVariable(name = "fromUserId") Long fromUserId) {
+		return friendService.getCountByFromUserId(fromUserId);
+	}
 
 	/**
 	 * 친구 요청 삭제
+	 *
 	 * @param friendRequestId
 	 * @return
 	 */
 	@DeleteMapping("/request/{friendRequestId}")
-	public ResponseEntity<String> removeFriendRequest(@PathVariable(name = "friendRequestId") Long friendRequestId){
-		try {
-			friendService.remove(friendRequestId);
-			return ResponseEntity.ok("친구 요청 삭제가 완료되었습니다");
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("친구 요청 삭제에 오류가 발생했습니다");
-		}
+	public ResponseEntity<String> removeFriendRequest(@PathVariable(name = "friendRequestId") Long friendRequestId) {
+		friendService.remove(friendRequestId);
+		return ResponseEntity.ok("친구 요청 삭제가 완료되었습니다");
 	}
 
 	/**
 	 * 친구 목록
-	 * @param userId
-	 * @param sendUserId
+	 *
+	 * @param fromUserId
 	 * @return
 	 */
-//	@GetMapping("/list/{userId}")
-//	public List<User> viewFriend(@PathVariable(name = "userId") User userId, User sendUserId) {
-//	    return friendService.viewUser(userId, sendUserId);
-//	}
+	@GetMapping("/list/{fromUserId}")
+	public ResponseEntity<List<ViewFriend>> viewFriend(@PathVariable(name = "fromUserId") Long fromUserId) {
+		Long sendUserId = fromUserId;
+		List<ViewFriend> viewFriends = friendService.getViewFriends(fromUserId, sendUserId);
+		return ResponseEntity.ok(viewFriends);
+	}
+
 
 	/**
 	 * 온라인 친구 목록
-	 * @param userId
-	 * @param sendUserId
+	 *
+	 * @param fromUserId
 	 * @return
 	 */
-//	@GetMapping("/online/{userId}")
-//	public List<User> getOnlineFriends(@PathVariable(name = "userId") User userId ,User sendUserId){
-//		return friendService.viewUser(userId, sendUserId).stream()
-//				.filter(user -> user.getStateId().getStateId() == 1)
-//				.collect(Collectors.toList());
-//	}
+	@GetMapping("/online/{fromUserId}")
+	public List<ViewDistinctFriend> getOnlineFriendsList(@PathVariable(name = "fromUserId") Long fromUserId) {
+		Long sendUserId = fromUserId;
+		return friendService.getViewOnlineFriend(sendUserId, fromUserId);
+	}
+
+
+	/**
+	 * 온라인 친구 목록 카운트
+	 *
+	 * @param fromUserId
+	 * @return
+	 */
+	@GetMapping("/online/count/{fromUserId}")
+	public long getOnlineFriends(@PathVariable(name = "fromUserId") Long fromUserId) {
+		Long sendUserId = fromUserId;
+		List<ViewDistinctFriend> getCountFriends = friendService.getViewOnlineFriend(fromUserId, sendUserId);
+		return getCountFriends.size();
+	}
 
 	/**
 	 * 내 친구 목록 카운트
-	 * @param view
+	 *
+	 * @param fromUserId
 	 * @return
 	 */
-//	@GetMapping("/list/count/{userId}")
-//	public long getFriends(@PathVariable(name = "userId") User userId) {
-//		long user = friendService.countByUserId(userId);
-//		long sendUserId = friendService.countBySendUserId(userId);
-//		return user + sendUserId;
-//	}
+	@GetMapping("/list/count/{fromUserId}")
+	public long getFriends(@PathVariable(name = "fromUserId") Long fromUserId) {
+		long user = friendService.countByUserId(fromUserId);
+		long sendUserId = friendService.countBySendUserId(fromUserId);
+		return user + sendUserId;
+	}
 
 	/**
 	 * 친구 삭제
+	 *
 	 * @param friendId
 	 * @return
 	 */
@@ -140,5 +170,4 @@ public class FriendApi {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("친구 삭제에 오류가 발생했습니다");
 		}
 	}
-
 }

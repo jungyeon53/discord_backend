@@ -12,6 +12,7 @@ import com.imfreepass.discord.user.api.response.ViewUser;
 import com.imfreepass.discord.user.exception.NoSuchException;
 import com.imfreepass.discord.user.service.UserImgService;
 import com.imfreepass.discord.user.service.UserService;
+import jakarta.persistence.Id;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -88,19 +89,15 @@ public class UserApi {
     public ResponseEntity<LoginResponse> login(@RequestBody LoginUser user) {
         User loginUser = userService.findByEmail(user.getEmail()).orElseThrow();
         boolean isPasswordMatched = encoder.matches(user.getPassword(), loginUser.getPassword());
-
         if (isPasswordMatched) {
             // accessToken
             Duration accessTime = Duration.ofMinutes(DEFAULT_ACCESS_EXPIRATION_MINUTES);
             String accessToken = tokenProvider.makeToken(user, accessTime);
-
             // refreshToken
             Duration refreshTokenTime = Duration.ofDays(DEFAULT_REFRESH_EXPIRATION_DAYS);
             String refreshToken = tokenProvider.makeToken(user, refreshTokenTime);
-
             userService.saveRefreshToken(user.getEmail(), refreshToken);
             userService.modifyState(loginUser.getUserId(), loginUser.getPreState());
-
             LoginResponse response = new LoginResponse(user.getEmail(), accessToken, refreshToken, "로그인 성공입니다.");
             return ResponseEntity.ok(response);
         }
@@ -141,9 +138,7 @@ public class UserApi {
     public ResponseEntity<String> logout(@RequestBody Logout user) {
         Optional<User> view = userService.findByEmail(user.getEmail());
         Long userId = view.get().getUserId();
-        int stateId = view.get().getStateId();
-        int preState = (stateId == 1) ? 4 : ((stateId == 2) ? 2 : 3);
-        userService.logout(userId, preState, user.getEmail());
+        userService.logout(view);
         return ResponseEntity.ok("로그아웃 완료입니다.");
     }
 
@@ -274,7 +269,7 @@ public class UserApi {
      */
     @PutMapping("/user/state")
     public int changeStatus(@RequestBody StateChange user) {
-        return userService.modifyState(user.getUserId(), user.getStateId());
+        return userService.modifyState(user.getUserId(), user.getState());
     }
 
     /**

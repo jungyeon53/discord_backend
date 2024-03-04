@@ -5,14 +5,15 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.imfreepass.discord.friend.api.response.ViewFriend;
 import com.imfreepass.discord.friend.entity.Friend;
-import com.imfreepass.discord.user.entity.User;
 
 @Repository
 public interface FriendRepository extends JpaRepository<Friend, Long>{
 	
-//	long countByUserId(User userId);
-	long countBySendUserId(User sendUserId);
-//	List<Friend> findByUserIdOrSendUserId(Long fromUserId, Long sendUserId);
+	long countByFromUserId(Long fromUserId);
+	long countBySendUserId(Long sendUserId);
+	List<Friend> findByFromUserIdOrSendUserId(Long fromUserId, Long sendUserId);
+
+//	long countByFromUserIdOrSendUserIdAndStateId(Long fromUserId, Long sendUserId, List<Integer> stateIds);
+
 }

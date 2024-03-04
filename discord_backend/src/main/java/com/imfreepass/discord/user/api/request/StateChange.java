@@ -1,13 +1,12 @@
 package com.imfreepass.discord.user.api.request;
 
-import com.imfreepass.discord.user.entity.State;
-
+import com.imfreepass.discord.user.entity.User;
 import lombok.Getter;
 
 @Getter
 public class StateChange {
 	
 	private Long userId;
-	private int stateId;
+	private User.State state;
 	
 }
