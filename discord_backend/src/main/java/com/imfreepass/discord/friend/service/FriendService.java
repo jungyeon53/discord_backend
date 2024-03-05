@@ -4,9 +4,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.imfreepass.discord.friend.api.request.BlockUser;
+import com.imfreepass.discord.friend.api.response.ViewBlockUser;
+import com.imfreepass.discord.friend.api.response.ViewBlockUserList;
 import com.imfreepass.discord.friend.api.response.ViewDistinctFriend;
 import com.imfreepass.discord.friend.api.response.ViewFriend;
+import com.imfreepass.discord.friend.entity.BlockFriend;
 import com.imfreepass.discord.friend.exception.DuplicateRequestException;
+import com.imfreepass.discord.friend.repository.BlockFriendRepository;
 import com.imfreepass.discord.user.api.response.ViewUser;
 import com.imfreepass.discord.user.entity.User;
 import com.imfreepass.discord.user.service.UserService;
@@ -23,6 +28,7 @@ import com.imfreepass.discord.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +36,9 @@ import lombok.extern.log4j.Log4j2;
 public class FriendService {
 
 	private final FriendRequestRepository friendRequestRepository;
-	private final UserRepository userRepository;
 	private final FriendRepository friendRepository;
 	private final UserService userService;
+	private final BlockFriendRepository blockFriendRepository;
 
 	/**
 	 * 친구 요청
@@ -88,28 +94,28 @@ public class FriendService {
 		return friendRequestRepository.findByFromUserId(fromUserId);
 	}
 
-	/**
-	 * 친구 요청 수락
-	 *
-	 * @param friend
-	 * @return
-	 */
-	public Friend insert(AddFriend friend) {
-
-		Friend addFriend = Friend.builder()
-				.fromUserId(friend.getUserId())
-				.sendUserId(friend.getSendUserId())
-				.friendState(1)
-				.build();
-		return friendRepository.save(addFriend);
-	}
+//	/**
+//	 * 친구 요청 수락
+//	 *
+//	 * @param friend
+//	 * @return
+//	 */
+//	public Friend insert(AddFriend friend) {
+//
+//		Friend addFriend = Friend.builder()
+//				.fromUserId(friend.getUserId())
+//				.sendUserId(friend.getSendUserId())
+//				.friendState()
+//				.build();
+//		return friendRepository.save(addFriend);
+//	}
 
 	/**
 	 * 친구 요청 테이블에서 삭제
 	 *
 	 * @param friendRequestId
 	 */
-	public void remove(Long friendRequestId) {
+	public void removeRequestFriend(Long friendRequestId) {
 		friendRequestRepository.deleteById(friendRequestId);
 	}
 
@@ -214,7 +220,39 @@ public class FriendService {
 						})
 						.map(user -> new ViewDistinctFriend(user.getUserId(), user, user.getState().ordinal()))
 						.collect(Collectors.toList());
+	}
 
+	/**
+	 * 친구 차단
+	 * @param user
+	 */
+	public void blockUser(ViewBlockUser user) {
+		boolean friendState = friendRequestRepository.findByFromUserIdAndSendUserId(user.getFromUserId(), user.getSendUserId()).isPresent();
+		if(friendState){
+			removeRequestFriend(user.getFriendRequestId());
+		} else {
+			removeFriend(user.getFriendId());
+		}
+		blockFriendRepository.save(BlockFriend.BlockFriendInsert(user));
+	}
 
+	/**
+	 * 차단 목록
+	 * @param sendUserId
+	 * @return
+	 */
+	public ViewBlockUserList blockUserLists(Long sendUserId){
+		blockFriendRepository.findBySendUserId(sendUserId);
+		return converterViewBlockUserList(sendUserId);
+	}
+
+	/**
+	 * ViewBlockUserList로 변환
+	 * @param sendUserId
+	 * @return
+	 */
+	public ViewBlockUserList converterViewBlockUserList(Long sendUserId){
+		BlockFriend user = blockFriendRepository.findById(sendUserId).orElseThrow();
+		return ViewBlockUserList.from(user);
 	}
 }

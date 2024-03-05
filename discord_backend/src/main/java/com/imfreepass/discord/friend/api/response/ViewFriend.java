@@ -17,5 +17,5 @@ public class ViewFriend {
 	private Long friendId;
 	private ViewUser fromUserId;
 	private ViewUser sendUserId;
-	private int friendState;
+	private Friend.FriendState friendState;
 }

@@ -7,8 +7,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.imfreepass.discord.friend.api.response.ViewDistinctFriend;
+import com.imfreepass.discord.friend.api.request.BlockUser;
+import com.imfreepass.discord.friend.api.response.*;
+import com.imfreepass.discord.friend.entity.BlockFriend;
+import com.imfreepass.discord.friend.repository.BlockFriendRepository;
 import com.imfreepass.discord.friend.service.FriendService;
+import com.imfreepass.discord.user.entity.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -20,13 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.annotation.JsonFilter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import com.imfreepass.discord.friend.api.request.AddFriend;
 import com.imfreepass.discord.friend.api.request.SendFriendRequest;
-import com.imfreepass.discord.friend.api.response.ViewFriend;
-import com.imfreepass.discord.friend.api.response.ViewFriendResponse;
 import com.imfreepass.discord.friend.entity.Friend;
 import com.imfreepass.discord.friend.entity.FriendRequest;
 import com.imfreepass.discord.user.api.response.ViewUser;
@@ -47,7 +45,6 @@ public class FriendApi {
 
 	private final FriendService friendService;
 	private final UserService userService;
-
 
 	/**
 	 * 친구신청
@@ -98,7 +95,7 @@ public class FriendApi {
 	 */
 	@DeleteMapping("/request/{friendRequestId}")
 	public ResponseEntity<String> removeFriendRequest(@PathVariable(name = "friendRequestId") Long friendRequestId) {
-		friendService.remove(friendRequestId);
+		friendService.removeRequestFriend(friendRequestId);
 		return ResponseEntity.ok("친구 요청 삭제가 완료되었습니다");
 	}
 
@@ -161,11 +158,28 @@ public class FriendApi {
 	 */
 	@DeleteMapping("/{friendId}")
 	public ResponseEntity<String> removeFriend(@PathVariable(name = "friendId") Long friendId) {
-		try {
 			friendService.removeFriend(friendId);
-			return ResponseEntity.ok("친구삭제가 완료되었습니다");
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("친구 삭제에 오류가 발생했습니다");
-		}
+			return ResponseEntity.ok("친구 삭제가 완료되었습니다");
 	}
+
+	/**
+	 * 친구 차단
+	 * @param user
+	 * @return
+	 */
+	@PostMapping("/block")
+	public ResponseEntity<String> blockUser(@RequestBody ViewBlockUser user){
+		friendService.blockUser(user);
+		return ResponseEntity.ok("친구 차단이 완료되었습니다.");
+	}
+
+	/**
+	 * 차단한 리스트
+	 * @param sendUserId
+	 * @return
+	 */
+	@GetMapping("/block/list/{sendUserId}")
+	public ViewBlockUserList getBlockList(@PathVariable(name = "sendUserId") Long sendUserId){
+		return friendService.blockUserLists(sendUserId);
+    }
 }

@@ -36,7 +36,7 @@ public class UserImgService {
 
 	/**
 	 * 랜덤 기본 이미지
-	 * @param user
+	 * @param userId
 	 * @return
 	 */
 	public UserImg insertRandom(Long userId) {
@@ -90,7 +90,7 @@ public class UserImgService {
 	 */
 	@Transactional
 	public void imgRemove(Long user_img_id, Long user_id) {
-		String relativePath = "src/main/resources/static/img/user_profile/" + user_id;
+		String relativePath = USER_ABSOLUTE_PATH + USER_RELATIVE_PATH + user_id;
 		Path absolutePath = Paths.get(relativePath);
 		try {
 			// 디렉토리 체크
@@ -132,10 +132,7 @@ public class UserImgService {
 		// 디렉토리 안에 파일이 있는지 확인
 		File[] fileDirectory = directory.listFiles();
 		boolean isFileDirectoryNull = (fileDirectory == null || fileDirectory.length == 0);
-		if (isFileDirectoryNull) {
-			System.out.println("디렉토리에 파일이 없습니다.");
-		} else {
-			System.out.println("디렉토리에 파일이 있습니다.");
+		if (!isFileDirectoryNull) {
 			Long userImgId = img.getUserImgId();
 			imgRemove(userImgId, userId);
 		}
@@ -143,6 +140,10 @@ public class UserImgService {
 		addProfile(files, userId);
 	}
 
+	/**
+	 * 기본 이미지 등록
+	 * @param profile
+	 */
 	@Transactional
 	public void defalutProfile(AddAndRemoveProfile profile) {
 		imgDbRemove(profile.getUserImgId());

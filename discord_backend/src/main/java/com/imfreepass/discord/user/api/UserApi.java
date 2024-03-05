@@ -171,7 +171,6 @@ public class UserApi {
      */
     @GetMapping("/email/{tokenLink}")
     public String chagePw(@PathVariable(name = "tokenLink") String tokenLink) {
-
         return "테스트";
     }
 

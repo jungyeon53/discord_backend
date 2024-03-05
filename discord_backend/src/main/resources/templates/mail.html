@@ -87,8 +87,7 @@
             </p>
           </div>
           <div class="resetbtn-wrap">
-            <a class="btn" th:href="@{http://localhost:8081/api/email/{link}(link=${link})}" rel="noreferrer noopener" target="_blank">Reset Password</a>
-
+            <a class="btn" th:href="'http://localhost:3000/reset#token=' + ${link}" rel="noreferrer noopener" target="_blank">Reset Password</a>
           </div>
         </section>
       </main>

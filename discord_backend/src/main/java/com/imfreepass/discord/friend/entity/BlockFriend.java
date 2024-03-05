@@ -1,5 +1,7 @@
 package com.imfreepass.discord.friend.entity;
 
+import com.imfreepass.discord.friend.api.request.BlockUser;
+import com.imfreepass.discord.friend.api.response.ViewBlockUser;
 import com.imfreepass.discord.user.entity.User;
 
 import jakarta.persistence.Column;
@@ -30,5 +32,13 @@ public class BlockFriend {
 	private Long sendUserId;
 	private Long fromUserId;
 	@Column(name = "friendState")
-	private int friendState;
+	private Friend.FriendState friendState;
+
+	public static BlockFriend BlockFriendInsert(ViewBlockUser request){
+		return BlockFriend.builder()
+				.fromUserId(request.getFromUserId())
+				.sendUserId(request.getSendUserId())
+				.friendState(Friend.FriendState.BLOCK)
+				.build();
+	}
 }

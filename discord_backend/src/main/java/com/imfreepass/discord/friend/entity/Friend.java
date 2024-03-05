@@ -33,13 +33,17 @@ public class Friend {
 	
 	private Long sendUserId;
 	@Column(name = "friendState")
-	private int friendState;
+	private FriendState friendState;
+
+	public enum FriendState{
+		FRIEND, BLOCK, IGNORE
+	}
 
     public static Friend FriendInsert(SendFriendRequest request) {
 		return Friend.builder()
 				.fromUserId(request.getFromUserId())
 				.sendUserId(request.getSendUserId())
-				.friendState(1)
+				.friendState(FriendState.FRIEND)
 				.build();
     }
 }
