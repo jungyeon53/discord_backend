@@ -277,8 +277,8 @@ public class UserApi {
      * @param req
      * @return
      */
-    @GetMapping("/user/serach")
-    public ResponseEntity<ViewUser> serachUsers(@RequestBody SeachUser req) {
+    @GetMapping("/user/search")
+    public ResponseEntity<ViewUser> searchUsers(@RequestBody SeachUser req) {
         Optional<User> getNickname = userService.findByNickname(req.getNickname());
         if (getNickname.isEmpty()) {
             Optional<User> getUserHash = userService.findByUserHash(req.getUserHash());

@@ -47,8 +47,6 @@ public class FriendService {
 	 * @return
 	 */
 	public void sendFriendRequest(SendFriendRequest request) {
-//		User fromUserId =  userRepository.findById(request.getFromUserId()).orElseThrow(() -> new NoSuchException("받은 유저를 찾을 수 없습니다."));
-//		User sendUserId = userRepository.findById(request.getSendUserId()).orElseThrow(() -> new NoSuchException("보낸 유저를 찾을 수 없습니다."));
 		friendRequestDuplicate(request.getFromUserId(), request.getSendUserId());
 		processFriendRequest(request);
 	}
@@ -67,7 +65,7 @@ public class FriendService {
 	}
 
 	/**
-	 * 요청여부 체크
+	 * 친구요청을 받았는지 여부 체크
 	 *
 	 * @param request
 	 */
@@ -85,6 +83,40 @@ public class FriendService {
 
 
 	/**
+	 * 친구 목록 리스트 (나 포함)
+	 *
+	 * @param fromUserId
+	 * @param sendUserId
+	 * @return
+	 */
+	public List<ViewFriend> getViewFriends(Long fromUserId, Long sendUserId) {
+		List<Friend> friends = viewUser(fromUserId, sendUserId);
+		return friends.stream()
+				.map(friend -> {
+					ViewUser sendUser = userService.converterViewUser(friend.getSendUserId());
+					ViewUser fromUser = userService.converterViewUser(friend.getFromUserId());
+					return new ViewFriend(friend.getFriendId(), sendUser, fromUser, friend.getFriendState());
+				})
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * 친구 목록
+	 * @param fromUserId
+	 * @param sendUserId
+	 * @return
+	 */
+	public List<ViewDistinctFriend> getViewFriendsList(Long fromUserId, Long sendUserId) {
+		List<ViewFriend> viewFriends = getViewFriends(fromUserId, sendUserId);
+		return getViewFriends(fromUserId, sendUserId).stream()
+				.flatMap(friend -> Stream.of(friend.getFromUserId(), friend.getSendUserId()))
+				.filter(user -> !user.getUserId().equals(fromUserId) && !user.getUserId().equals(sendUserId))
+				.distinct()
+				.map(user -> new ViewDistinctFriend(user.getUserId(), user, user.getState().ordinal()))
+				.collect(Collectors.toList());
+	}
+
+	/**
 	 * 친구 요청 목록 보기
 	 *
 	 * @param fromUserId
@@ -93,22 +125,6 @@ public class FriendService {
 	public List<FriendRequest> getFriendRequests(Long fromUserId) {
 		return friendRequestRepository.findByFromUserId(fromUserId);
 	}
-
-//	/**
-//	 * 친구 요청 수락
-//	 *
-//	 * @param friend
-//	 * @return
-//	 */
-//	public Friend insert(AddFriend friend) {
-//
-//		Friend addFriend = Friend.builder()
-//				.fromUserId(friend.getUserId())
-//				.sendUserId(friend.getSendUserId())
-//				.friendState()
-//				.build();
-//		return friendRepository.save(addFriend);
-//	}
 
 	/**
 	 * 친구 요청 테이블에서 삭제
@@ -166,40 +182,6 @@ public class FriendService {
 	public List<Friend> viewUser(Long fromUserId, Long sendUserId) {
 		return friendRepository.findByFromUserIdOrSendUserId(fromUserId, sendUserId);
 
-	}
-
-	/**
-	 * 친구 목록 리스트 (나 포함)
-	 *
-	 * @param fromUserId
-	 * @param sendUserId
-	 * @return
-	 */
-	public List<ViewFriend> getViewFriends(Long fromUserId, Long sendUserId) {
-		List<Friend> friends = viewUser(fromUserId, sendUserId);
-		return friends.stream()
-				.map(friend -> {
-					ViewUser sendUser = userService.converterViewUser(friend.getSendUserId());
-					ViewUser fromUser = userService.converterViewUser(friend.getFromUserId());
-					return new ViewFriend(friend.getFriendId(), sendUser, fromUser, friend.getFriendState());
-				})
-				.collect(Collectors.toList());
-	}
-
-	/**
-	 * 친구 목록
-	 * @param fromUserId
-	 * @param sendUserId
-	 * @return
-	 */
-	public List<ViewDistinctFriend> getViewFriendsList(Long fromUserId, Long sendUserId) {
-		List<ViewFriend> viewFriends = getViewFriends(fromUserId, sendUserId);
-		return getViewFriends(fromUserId, sendUserId).stream()
-						.flatMap(friend -> Stream.of(friend.getFromUserId(), friend.getSendUserId()))
-						.filter(user -> !user.getUserId().equals(fromUserId) && !user.getUserId().equals(sendUserId))
-						.distinct()
-						.map(user -> new ViewDistinctFriend(user.getUserId(), user, user.getState().ordinal()))
-						.collect(Collectors.toList());
 	}
 
 	/**
